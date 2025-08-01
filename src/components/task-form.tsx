@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -23,16 +24,19 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Save, CalendarIcon } from "lucide-react";
+import { Save, CalendarIcon, Upload, X, Paperclip } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { clients } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import React, { useState, useRef } from "react";
 
 export function TaskForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const taskFormSchema = z.object({
     title: z.string().min(5, t('task_form.title_required')),
@@ -55,12 +59,25 @@ export function TaskForm() {
   });
 
   function onSubmit(values: TaskFormValues) {
-    console.log(values);
+    console.log({ ...values, files });
      toast({
         title: t('task_form.toast_success_title'),
         description: t('task_form.toast_success_description'),
     });
+    setFiles([]);
+    form.reset();
   }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const newFiles = Array.from(event.target.files);
+      setFiles(prevFiles => [...prevFiles, ...newFiles]);
+    }
+  };
+
+  const handleRemoveFile = (indexToRemove: number) => {
+    setFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
+  };
 
   return (
     <Card>
@@ -161,6 +178,40 @@ export function TaskForm() {
                   </FormItem>
                 )}
               />
+              <div className="md:col-span-2">
+                <FormLabel>Documents</FormLabel>
+                <div className="mt-2 flex flex-col gap-4">
+                  <Input 
+                    type="file" 
+                    multiple 
+                    ref={fileInputRef} 
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Documents
+                  </Button>
+                  {files.length > 0 && (
+                    <div className="space-y-2 rounded-md border p-2">
+                      <p className="text-sm font-medium">Attached Files:</p>
+                      <ul className="divide-y divide-border">
+                        {files.map((file, index) => (
+                          <li key={index} className="flex items-center justify-between py-1">
+                            <div className="flex items-center gap-2">
+                                <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">{file.name}</span>
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveFile(index)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="flex justify-end">
               <Button type="submit">
