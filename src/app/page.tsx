@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const totalClients = clients.length;
   const activeDeals = opportunities.filter(o => o.stage !== 'won' && o.stage !== 'lost').length;
   const totalRevenue = opportunities.filter(o => o.stage === 'won').reduce((sum, o) => sum + o.value, 0);
-  const overdueTasks = tasks.filter(t => !t.completed && new Date(t.dueDate) < new Date()).length;
+  const overdueTasks = tasks.filter(t => t.status !== 'closed' && new Date(t.dueDate) < new Date()).length;
 
   const opportunitiesByStage = opportunities.reduce((acc, opp) => {
     const stage = opp.stage.charAt(0).toUpperCase() + opp.stage.slice(1);
@@ -127,9 +127,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {tasks.filter(t => !t.completed).slice(0, 4).map(task => (
+              {tasks.filter(t => t.status !== 'closed').slice(0, 4).map(task => (
                 <div key={task.id} className="flex items-center">
-                  {task.completed ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
+                  {task.status === 'closed' ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">{task.title}</p>
                     <p className="text-sm text-muted-foreground">{t('dashboard.due_date', { date: format(parseISO(task.dueDate), 'dd.MM.yyyy') })}</p>

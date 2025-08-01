@@ -36,7 +36,7 @@ export type Task = {
   title: string;
   dueDate: string;
   assignedTo: string;
-  completed: boolean;
+  status: 'planned' | 'open' | 'closed';
   timeEstimate: number;
   client?: Client | null;
 };

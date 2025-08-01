@@ -2,32 +2,57 @@
 'use client';
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { tasks as initialTasks } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { PlusCircle, Clock } from "lucide-react";
+import { PlusCircle, Clock, MoreVertical, Calendar, CircleHelp, Circle, CheckCircle } from "lucide-react";
 import { format, isPast, isToday, parseISO } from "date-fns";
 import Link from "next/link";
 import { useLanguage } from "@/context/language-context";
 import { useState, useMemo } from "react";
 import type { Task } from "@/lib/types";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
+const statusIcons: Record<Task['status'], React.ElementType> = {
+    planned: CircleHelp,
+    open: Circle,
+    closed: CheckCircle,
+};
+
+const statusColors: Record<Task['status'], string> = {
+    planned: "text-amber-500",
+    open: "text-blue-500",
+    closed: "text-green-500",
+};
+
 
 export default function TasksPage() {
     const { t } = useLanguage();
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const [filter, setFilter] = useState<'all' | Task['status']>('all');
 
-    const handleTaskCompletion = (taskId: string, completed: boolean) => {
+    const handleTaskCompletion = (taskId: string) => {
         setTasks(currentTasks =>
             currentTasks.map(task =>
-                task.id === taskId ? { ...task, completed } : task
+                task.id === taskId ? { ...task, status: task.status === 'closed' ? 'open' : 'closed' } : task
             )
         );
     };
+
+    const handleDelete = (taskId: string) => {
+        alert(`Deleting task ${taskId}`);
+        setTasks(currentTasks => currentTasks.filter(task => task.id !== taskId));
+    };
     
+    const filteredTasks = useMemo(() => {
+        if (filter === 'all') return tasks;
+        return tasks.filter(task => task.status === filter);
+    }, [tasks, filter]);
+
     const totalHours = useMemo(() => {
-        return tasks.reduce((acc, task) => acc + task.timeEstimate, 0);
-    }, [tasks]);
+        return filteredTasks.reduce((acc, task) => acc + task.timeEstimate, 0);
+    }, [filteredTasks]);
 
   return (
     <>
@@ -39,19 +64,41 @@ export default function TasksPage() {
           </Link>
         </Button>
       </PageHeader>
-      <Card>
+       <Card>
+        <CardHeader className="border-b">
+            <div className="flex items-center gap-2">
+                <Button variant={filter === 'all' ? 'default' : 'ghost'} size="sm" onClick={() => setFilter('all')}>
+                    {t('task_form.status_all')}
+                </Button>
+                <Button variant={filter === 'planned' ? 'default' : 'ghost'} size="sm" onClick={() => setFilter('planned')}>
+                    <CircleHelp className="mr-2 h-4 w-4" />
+                    {t('task_form.status_planned')}
+                </Button>
+                 <Button variant={filter === 'open' ? 'default' : 'ghost'} size="sm" onClick={() => setFilter('open')}>
+                    <Circle className="mr-2 h-4 w-4" />
+                    {t('task_form.status_open')}
+                </Button>
+                 <Button variant={filter === 'closed' ? 'default' : 'ghost'} size="sm" onClick={() => setFilter('closed')}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    {t('task_form.status_closed')}
+                </Button>
+            </div>
+        </CardHeader>
         <CardContent className="p-0">
           <ul className="divide-y divide-border">
-            {tasks
+            {filteredTasks
               .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
               .map(task => {
                 const dueDate = parseISO(task.dueDate);
-                const isOverdue = !task.completed && isPast(dueDate) && !isToday(dueDate);
+                const isOverdue = task.status !== 'closed' && isPast(dueDate) && !isToday(dueDate);
+                const StatusIcon = statusIcons[task.status];
                 return (
-                  <li key={task.id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
-                    <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => handleTaskCompletion(task.id, !!checked)} aria-label={`Mark task '${task.title}' as complete`} />
+                  <li key={task.id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group">
+                    <button onClick={() => handleTaskCompletion(task.id)} className={cn("cursor-pointer", statusColors[task.status])}>
+                        <StatusIcon className="h-5 w-5" />
+                    </button>
                     <div className="flex-1 grid gap-1">
-                      <label htmlFor={`task-${task.id}`} className={cn("font-medium", task.completed && "line-through text-muted-foreground")}>{task.title}</label>
+                      <span className={cn("font-medium", task.status === 'closed' && "line-through text-muted-foreground")}>{task.title}</span>
                       {task.client && <p className="text-sm text-muted-foreground">{task.client.companyName}</p>}
                     </div>
                     <div className="text-sm text-muted-foreground">{task.assignedTo}</div>
@@ -59,9 +106,25 @@ export default function TasksPage() {
                         <Clock className="h-4 w-4" />
                         <span>{task.timeEstimate}h</span>
                     </div>
-                    <div className={cn("text-sm font-medium w-20 text-right", isOverdue ? "text-destructive" : "text-muted-foreground")}>
-                      {format(dueDate, "MMM dd")}
+                    <div className={cn("text-sm font-medium w-28 text-right flex items-center gap-2 justify-end", isOverdue ? "text-destructive" : "text-muted-foreground")}>
+                      <Calendar className="h-4 w-4" />
+                      {format(dueDate, "MMM dd, yyyy")}
                     </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                                <Link href="/tasks/new">{t('opportunities_page.edit_button')}</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDelete(task.id)} className="text-red-500">
+                               {t('opportunities_page.delete_button')}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   </li>
                 );
               })}

@@ -203,7 +203,11 @@
         "time_estimate": "Time Estimate (hours)",
         "time_estimate_placeholder": "e.g., 8",
         "time_estimate_required": "Time estimate is required.",
-        "total_time": "Total Time"
+        "total_time": "Total Time",
+        "status_all": "All",
+        "status_planned": "Planned",
+        "status_open": "Open",
+        "status_closed": "Closed"
     },
     "admin_page": {
         "title": "Admin Panel",

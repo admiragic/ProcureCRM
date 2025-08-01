@@ -203,7 +203,11 @@
         "time_estimate": "Szacowany czas (godziny)",
         "time_estimate_placeholder": "np. 8",
         "time_estimate_required": "Szacowany czas jest wymagany.",
-        "total_time": "Łączny czas"
+        "total_time": "Łączny czas",
+        "status_all": "Wszystkie",
+        "status_planned": "Planowane",
+        "status_open": "Otwarte",
+        "status_closed": "Zamknięte"
     },
     "admin_page": {
         "title": "Panel Administratora",

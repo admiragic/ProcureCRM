@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState, useRef } from "react";
+import type { Task } from "@/lib/types";
 
 export function TaskForm() {
   const { t } = useLanguage();
@@ -46,6 +47,7 @@ export function TaskForm() {
         required_error: t('task_form.due_date_required'),
     }),
     timeEstimate: z.coerce.number().min(0, t('task_form.time_estimate_required')),
+    status: z.enum(['planned', 'open', 'closed']),
   });
   
   type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -57,6 +59,7 @@ export function TaskForm() {
       clientId: null,
       assignedTo: "",
       timeEstimate: 0,
+      status: "planned",
     },
   });
 
@@ -189,6 +192,28 @@ export function TaskForm() {
                     <FormControl>
                       <Input type="number" placeholder={t('task_form.time_estimate_placeholder')} {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('client_form.status')}</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('client_form.select_status')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="planned">{t('task_form.status_planned')}</SelectItem>
+                        <SelectItem value="open">{t('task_form.status_open')}</SelectItem>
+                        <SelectItem value="closed">{t('task_form.status_closed')}</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

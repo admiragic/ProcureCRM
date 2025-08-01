@@ -203,7 +203,11 @@
         "time_estimate": "Procjena vremena (sati)",
         "time_estimate_placeholder": "npr. 8",
         "time_estimate_required": "Procjena vremena je obavezna.",
-        "total_time": "Ukupno vrijeme"
+        "total_time": "Ukupno vrijeme",
+        "status_all": "Svi",
+        "status_planned": "Planiran",
+        "status_open": "Otvoren",
+        "status_closed": "Zatvoren"
     },
     "admin_page": {
         "title": "Admin Panel",
