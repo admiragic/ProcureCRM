@@ -19,9 +19,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userList, setUserList] = useState<User[]>(users);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+        console.error("Failed to parse user from localStorage", error);
+        localStorage.removeItem('user');
     }
   }, []);
 
