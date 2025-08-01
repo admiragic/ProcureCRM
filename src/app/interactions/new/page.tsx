@@ -1,3 +1,6 @@
+
+'use client';
+
 import { PageHeader } from "@/components/page-header";
 import { InteractionForm } from "@/components/interaction-form";
 import { useLanguage } from "@/context/language-context";
