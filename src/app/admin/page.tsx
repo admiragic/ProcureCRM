@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { PageHeader } from "@/components/page-header";
 import { UserTable } from "@/components/admin/user-table";
 import { AddUserForm } from "@/components/admin/add-user-form";
@@ -9,8 +10,11 @@ import { useLanguage } from "@/context/language-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, FileText } from "lucide-react";
-import { clients, interactions, opportunities, tasks } from "@/lib/data";
-import type { Client, Interaction, Opportunity, Task } from "@/lib/types";
+import { getClients } from '@/services/clientService';
+import { getInteractions } from '@/services/interactionService';
+import { getOpportunities } from '@/services/opportunityService';
+import { getTasks } from '@/services/taskService';
+import type { Client, Interaction, Opportunity, Task, User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -51,24 +55,32 @@ export default function AdminPage() {
   const { getUsers } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const users = getUsers();
+  const [users, setUsers] = useState<User[]>([]);
 
-  const handleExport = (dataType: 'clients' | 'interactions' | 'opportunities' | 'tasks') => {
+  useEffect(() => {
+    const fetchUsers = async () => {
+        const userList = await getUsers();
+        setUsers(userList);
+    };
+    fetchUsers();
+  }, [getUsers]);
+
+  const handleExport = async (dataType: 'clients' | 'interactions' | 'opportunities' | 'tasks') => {
     let data: any[] = [];
     let filename = `${dataType}.csv`;
 
     switch (dataType) {
         case 'clients':
-            data = clients;
+            data = await getClients();
             break;
         case 'interactions':
-            data = interactions;
+            data = await getInteractions();
             break;
         case 'opportunities':
-            data = opportunities;
+            data = await getOpportunities();
             break;
         case 'tasks':
-            data = tasks;
+            data = await getTasks();
             break;
     }
 
@@ -87,19 +99,20 @@ export default function AdminPage() {
   const handleDownloadTemplate = (dataType: 'clients' | 'opportunities' | 'interactions' | 'tasks') => {
     let headers: string[] = [];
     let filename = `${dataType}_template.csv`;
-
+    
+    // Define headers based on your data structure, excluding complex objects/IDs
     switch (dataType) {
         case 'clients':
-            headers = Object.keys(clients[0]);
+            headers = ["companyName", "contactPerson", "email", "phone", "address", "industry", "status", "type"];
             break;
         case 'opportunities':
-            headers = Object.keys(opportunities[0]).filter(k => k !== 'client');
+            headers = ["clientId", "stage", "value", "closingDate"];
             break;
         case 'interactions':
-            headers = Object.keys(interactions[0]).filter(k => k !== 'client');
+            headers = ["clientId", "type", "notes", "salesperson"];
             break;
         case 'tasks':
-            headers = Object.keys(tasks[0]).filter(k => k !== 'client');
+            headers = ["clientId", "title", "dueDate", "assignedTo", "status", "timeEstimate"];
             break;
     }
 
@@ -122,9 +135,10 @@ export default function AdminPage() {
     reader.onload = (e) => {
         const text = e.target?.result;
         console.log("Uploaded CSV content:\n", text);
+        // Here you would parse the CSV and call the appropriate service to add data
         toast({
             title: "File Uploaded",
-            description: "Check the console to see the imported data.",
+            description: "Check the console to see the imported data. Import logic not implemented yet.",
         });
     };
     reader.readAsText(file);

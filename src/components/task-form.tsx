@@ -26,18 +26,32 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save, CalendarIcon, Upload, X, Paperclip } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import { clients } from "@/lib/data";
+import { getClients } from "@/services/clientService";
+import { addTask } from "@/services/taskService";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import React, { useState, useRef } from "react";
-import type { Task } from "@/lib/types";
+import React, { useState, useRef, useEffect } from "react";
+import type { Client, Task } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export function TaskForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  const [clients, setClients] = useState<Client[]>([]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      const clientsData = await getClients();
+      setClients(clientsData);
+    };
+    fetchClients();
+  }, []);
 
   const taskFormSchema = z.object({
     title: z.string().min(5, t('task_form.title_required')),
@@ -63,14 +77,36 @@ export function TaskForm() {
     },
   });
 
-  function onSubmit(values: TaskFormValues) {
-    console.log({ ...values, files });
-     toast({
-        title: t('task_form.toast_success_title'),
-        description: t('task_form.toast_success_description'),
-    });
-    setFiles([]);
-    form.reset();
+  async function onSubmit(values: TaskFormValues) {
+    try {
+      const fileURLs = await Promise.all(
+        files.map(async (file) => {
+          const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
+          await uploadBytes(storageRef, file);
+          return await getDownloadURL(storageRef);
+        })
+      );
+      
+      await addTask({ 
+        ...values, 
+        dueDate: format(values.dueDate, 'yyyy-MM-dd'),
+        documents: fileURLs 
+      });
+
+      toast({
+          title: t('task_form.toast_success_title'),
+          description: t('task_form.toast_success_description'),
+      });
+      setFiles([]);
+      form.reset();
+      router.push('/tasks');
+    } catch(e) {
+      toast({
+        title: "Error",
+        description: "Failed to save task",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

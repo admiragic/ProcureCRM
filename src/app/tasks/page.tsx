@@ -3,16 +3,15 @@
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { tasks as initialTasks } from "@/lib/data";
+import { getTasks, updateTaskStatus, deleteTask } from "@/services/taskService";
 import { cn } from "@/lib/utils";
 import { PlusCircle, Clock, MoreVertical, Calendar, CircleHelp, Circle, CheckCircle } from "lucide-react";
 import { format, isPast, isToday, parseISO } from "date-fns";
 import Link from "next/link";
 import { useLanguage } from "@/context/language-context";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Task } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 
 const statusIcons: Record<Task['status'], React.ElementType> = {
     planned: CircleHelp,
@@ -29,19 +28,33 @@ const statusColors: Record<Task['status'], string> = {
 
 export default function TasksPage() {
     const { t } = useLanguage();
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | Task['status']>('all');
 
-    const handleTaskCompletion = (taskId: string) => {
+    useEffect(() => {
+        const fetchTasks = async () => {
+            setLoading(true);
+            const tasksData = await getTasks();
+            setTasks(tasksData);
+            setLoading(false);
+        }
+        fetchTasks();
+    }, []);
+
+    const handleTaskCompletion = async (taskId: string, currentStatus: Task['status']) => {
+        const newStatus = currentStatus === 'closed' ? 'open' : 'closed';
+        await updateTaskStatus(taskId, newStatus);
         setTasks(currentTasks =>
             currentTasks.map(task =>
-                task.id === taskId ? { ...task, status: task.status === 'closed' ? 'open' : 'closed' } : task
+                task.id === taskId ? { ...task, status: newStatus } : task
             )
         );
     };
 
-    const handleDelete = (taskId: string) => {
+    const handleDelete = async (taskId: string) => {
         alert(`Deleting task ${taskId}`);
+        await deleteTask(taskId);
         setTasks(currentTasks => currentTasks.filter(task => task.id !== taskId));
     };
     
@@ -53,6 +66,8 @@ export default function TasksPage() {
     const totalHours = useMemo(() => {
         return filteredTasks.reduce((acc, task) => acc + task.timeEstimate, 0);
     }, [filteredTasks]);
+
+    if (loading) return <div>Loading...</div>;
 
   return (
     <>
@@ -94,7 +109,7 @@ export default function TasksPage() {
                 const StatusIcon = statusIcons[task.status];
                 return (
                   <li key={task.id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group">
-                    <button onClick={() => handleTaskCompletion(task.id)} className={cn("cursor-pointer", statusColors[task.status])}>
+                    <button onClick={() => handleTaskCompletion(task.id, task.status)} className={cn("cursor-pointer", statusColors[task.status])}>
                         <StatusIcon className="h-5 w-5" />
                     </button>
                     <div className="flex-1 grid gap-1">

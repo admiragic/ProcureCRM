@@ -11,15 +11,16 @@ import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
   const { login } = useAuth();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    setError('');
     try {
-      login(username, password);
+      await login(email, password);
       router.push('/');
     } catch (err: any) {
       setError(err.message);
@@ -34,19 +35,19 @@ export default function LoginPage() {
             <Logo />
             </div>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your username and password to access the dashboard.</CardDescription>
+          <CardDescription>Enter your email and password to access the dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="jnadmin01082025"
+                id="email"
+                type="email"
+                placeholder="admin@procurerm.com"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">

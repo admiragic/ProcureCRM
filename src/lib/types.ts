@@ -1,3 +1,6 @@
+
+import { Timestamp } from 'firebase/firestore';
+
 export type Client = {
   id: string;
   companyName: string;
@@ -8,7 +11,7 @@ export type Client = {
   industry: string;
   status: 'active' | 'inactive' | 'archived';
   type: 'lead' | 'prospect' | 'customer';
-  createdAt: string;
+  createdAt: Timestamp | string;
 };
 
 export type Interaction = {
@@ -38,5 +41,6 @@ export type Task = {
   assignedTo: string;
   status: 'planned' | 'open' | 'closed';
   timeEstimate: number;
+  documents?: string[];
   client?: Client | null;
 };

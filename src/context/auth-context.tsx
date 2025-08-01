@@ -2,64 +2,72 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { users, User } from '@/lib/users';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, setDoc, getDoc, getDocs, collection } from 'firebase/firestore';
+import type { User } from '@/lib/users';
 
 type AuthContextType = {
   user: User | null;
-  login: (username: string, pass: string) => void;
+  loading: boolean;
+  login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
-  addUser: (user: User) => void;
-  getUsers: () => User[];
+  addUser: (user: User) => Promise<void>;
+  getUsers: () => Promise<User[]>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userList, setUserList] = useState<User[]>(users);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (userDoc.exists()) {
+          setUser({ id: userDoc.id, ...userDoc.data() } as User);
+        } else {
+            setUser(null);
+        }
+      } else {
+        setUser(null);
       }
-    } catch (error) {
-        console.error("Failed to parse user from localStorage", error);
-        localStorage.removeItem('user');
-    } finally {
-        setLoading(false);
-    }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = (username: string, pass: string) => {
-    const foundUser = userList.find(u => u.username === username && u.password === pass);
-    if (foundUser) {
-      const userToStore = { id: foundUser.id, username: foundUser.username, role: foundUser.role, name: foundUser.name, email: foundUser.email };
-      localStorage.setItem('user', JSON.stringify(userToStore));
-      setUser(userToStore);
-    } else {
-      throw new Error('Invalid username or password');
-    }
+  const login = async (email: string, pass: string) => {
+    await signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const logout = async () => {
+    await signOut(auth);
     window.location.href = '/login';
   };
 
-  const addUser = (newUser: User) => {
-    setUserList(prevUsers => [...prevUsers, { ...newUser, id: `USR-00${prevUsers.length + 1}` }]);
+  const addUser = async (newUser: User) => {
+    if (!newUser.password) throw new Error("Password is required for new user");
+    const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
+    const uid = userCredential.user.uid;
+    await setDoc(doc(db, 'users', uid), {
+      username: newUser.username,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    });
   };
 
-  const getUsers = () => {
-    return userList;
-  }
+  const getUsers = async (): Promise<User[]> => {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, addUser, getUsers }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers }}>
       {!loading && children}
     </AuthContext.Provider>
   );

@@ -1,0 +1,36 @@
+
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import type { Task, Client } from '@/lib/types';
+
+const tasksCollection = collection(db, 'tasks');
+
+export const getTasks = async (): Promise<Task[]> => {
+    const snapshot = await getDocs(tasksCollection);
+    const tasks = await Promise.all(snapshot.docs.map(async (d) => {
+        const data = d.data();
+        let client: Client | null = null;
+        if (data.clientId) {
+            const clientDoc = await getDoc(doc(db, 'clients', data.clientId));
+            if (clientDoc.exists()) {
+                client = { id: clientDoc.id, ...clientDoc.data() } as Client;
+            }
+        }
+        return { id: d.id, ...data, client } as Task;
+    }));
+    return tasks;
+};
+
+export const addTask = async (task: Omit<Task, 'id' | 'client'>) => {
+    return await addDoc(tasksCollection, task);
+};
+
+export const updateTaskStatus = async (taskId: string, status: Task['status']) => {
+    const taskRef = doc(db, 'tasks', taskId);
+    return await updateDoc(taskRef, { status });
+};
+
+export const deleteTask = async (taskId: string) => {
+    const taskRef = doc(db, 'tasks', taskId);
+    return await deleteDoc(taskRef);
+};

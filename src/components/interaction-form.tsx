@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,12 +26,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import { clients } from "@/lib/data";
+import { getClients } from "@/services/clientService";
+import { addInteraction } from "@/services/interactionService";
+import type { Client } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export function InteractionForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const router = useRouter();
+  const [clients, setClients] = useState<Client[]>([]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      const clientsData = await getClients();
+      setClients(clientsData);
+    };
+    fetchClients();
+  }, []);
 
   const interactionFormSchema = z.object({
     clientId: z.string().min(1, t('interaction_form.client_required')),
@@ -50,12 +65,21 @@ export function InteractionForm() {
     },
   });
 
-  function onSubmit(values: InteractionFormValues) {
-    console.log(values);
-    toast({
-        title: t('interaction_form.toast_success_title'),
-        description: t('interaction_form.toast_success_description'),
-    });
+  async function onSubmit(values: InteractionFormValues) {
+    try {
+        await addInteraction(values);
+        toast({
+            title: t('interaction_form.toast_success_title'),
+            description: t('interaction_form.toast_success_description'),
+        });
+        router.push('/interactions');
+    } catch(e) {
+        toast({
+            title: "Error",
+            description: "Failed to save interaction.",
+            variant: "destructive"
+        })
+    }
   }
 
   return (

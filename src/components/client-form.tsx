@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -24,10 +25,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Save } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useToast } from "@/hooks/use-toast";
+import { addClient } from "@/services/clientService";
+import { useRouter } from "next/navigation";
 
 export function ClientForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const router = useRouter();
 
   const clientFormSchema = z.object({
     companyName: z.string().min(2, t('client_form.company_name_required')),
@@ -56,12 +60,21 @@ export function ClientForm() {
     },
   });
 
-  function onSubmit(values: ClientFormValues) {
-    console.log(values);
-    toast({
-        title: t('client_form.toast_success_title'),
-        description: t('client_form.toast_success_description', { companyName: values.companyName }),
+  async function onSubmit(values: ClientFormValues) {
+    try {
+      await addClient(values);
+      toast({
+          title: t('client_form.toast_success_title'),
+          description: t('client_form.toast_success_description', { companyName: values.companyName }),
       });
+      router.push('/clients');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save client.",
+        variant: "destructive"
+      })
+    }
   }
 
   return (

@@ -1,11 +1,31 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { PlusCircle } from "lucide-react";
-import { clients } from "@/lib/data";
+import { getClients } from "@/services/clientService";
 import { ClientTable } from "@/components/client-table";
 import Link from "next/link";
+import type { Client } from '@/lib/types';
 
 export default function ClientsPage() {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      setLoading(true);
+      const clientsData = await getClients();
+      setClients(clientsData);
+      setLoading(false);
+    }
+    fetchClients();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <>
       <PageHeader

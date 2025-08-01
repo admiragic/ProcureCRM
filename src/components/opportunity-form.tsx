@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,14 +27,27 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save, CalendarIcon } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import { clients } from "@/lib/data";
+import { getClients } from "@/services/clientService";
+import type { Client } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { addOpportunity } from "@/services/opportunityService";
+import { useRouter } from "next/navigation";
 
 export function OpportunityForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const router = useRouter();
+  const [clients, setClients] = useState<Client[]>([]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      const clientsData = await getClients();
+      setClients(clientsData);
+    };
+    fetchClients();
+  }, []);
 
   const opportunityFormSchema = z.object({
     clientId: z.string().min(1, t('opportunity_form.client_required')),
@@ -54,12 +69,24 @@ export function OpportunityForm() {
     },
   });
 
-  function onSubmit(values: OpportunityFormValues) {
-    console.log(values);
-    toast({
-        title: t('opportunity_form.toast_success_title'),
-        description: t('opportunity_form.toast_success_description'),
-    });
+  async function onSubmit(values: OpportunityFormValues) {
+    try {
+      await addOpportunity({
+        ...values,
+        closingDate: format(values.closingDate, 'yyyy-MM-dd')
+      });
+      toast({
+          title: t('opportunity_form.toast_success_title'),
+          description: t('opportunity_form.toast_success_description'),
+      });
+      router.push('/opportunities');
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "Failed to save opportunity.",
+            variant: "destructive"
+        })
+    }
   }
 
   return (
