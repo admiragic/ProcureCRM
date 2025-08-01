@@ -1,12 +1,12 @@
+
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { AppHeader } from "@/components/layout/app-header";
+import { AuthProvider } from "@/context/auth-context";
 import { LanguageProvider } from "@/context/language-context";
+import { AppContent } from "@/components/layout/app-content";
 
 export const metadata: Metadata = {
   title: "ProcureCRM",
@@ -48,19 +48,11 @@ export default function RootLayout({
           sourceCodePro.variable
         )}
       >
-        <LanguageProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <div className="flex flex-col min-h-screen">
-                <AppHeader />
-                <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                  {children}
-                </main>
-              </div>
-            </SidebarInset>
-          </SidebarProvider>
-        </LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <AppContent>{children}</AppContent>
+          </LanguageProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

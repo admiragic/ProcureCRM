@@ -6,7 +6,8 @@
         "opportunities": "Prilike",
         "tasks": "Zadaci",
         "interactions": "Interakcije",
-        "ai_email": "AI Email"
+        "ai_email": "AI Email",
+        "admin": "Admin"
     },
     "dashboard": {
         "title": "Nadzorna ploča",
@@ -199,5 +200,28 @@
         "save_button": "Spremi zadatak",
         "toast_success_title": "Zadatak spremljen",
         "toast_success_description": "Novi zadatak je uspješno spremljen."
+    },
+    "admin_page": {
+        "title": "Admin Panel",
+        "description": "Upravljajte korisnicima i postavkama sustava.",
+        "table_name": "Ime",
+        "table_email": "Email",
+        "table_username": "Korisničko ime",
+        "table_role": "Uloga",
+        "form_title": "Dodaj novog korisnika",
+        "form_description": "Stvorite novi korisnički račun.",
+        "form_name": "Puno ime",
+        "form_name_placeholder": "npr. Ivan Horvat",
+        "form_email": "Email",
+        "form_email_placeholder": "npr. ivan.h@primjer.com",
+        "form_username": "Korisničko ime",
+        "form_username_placeholder": "npr. ivanhorvat",
+        "form_password": "Lozinka",
+        "form_role": "Uloga",
+        "form_role_user": "Korisnik",
+        "form_role_admin": "Admin",
+        "form_save_button": "Dodaj korisnika",
+        "toast_success_title": "Korisnik dodan",
+        "toast_success_description": "Korisnik {{name}} je uspješno dodan."
     }
 }

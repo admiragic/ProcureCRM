@@ -6,7 +6,8 @@
         "opportunities": "Szanse",
         "tasks": "Zadania",
         "interactions": "Interakcje",
-        "ai_email": "AI Email"
+        "ai_email": "AI Email",
+        "admin": "Admin"
     },
     "dashboard": {
         "title": "Panel",
@@ -199,5 +200,28 @@
         "save_button": "Zapisz zadanie",
         "toast_success_title": "Zadanie zapisane",
         "toast_success_description": "Nowe zadanie zostało pomyślnie zapisane."
+    },
+    "admin_page": {
+        "title": "Panel Administratora",
+        "description": "Zarządzaj użytkownikami i ustawieniami systemu.",
+        "table_name": "Imię i nazwisko",
+        "table_email": "Email",
+        "table_username": "Nazwa użytkownika",
+        "table_role": "Rola",
+        "form_title": "Dodaj nowego użytkownika",
+        "form_description": "Utwórz nowe konto użytkownika.",
+        "form_name": "Pełna nazwa",
+        "form_name_placeholder": "np. Jan Kowalski",
+        "form_email": "Email",
+        "form_email_placeholder": "np. jan.k@example.com",
+        "form_username": "Nazwa użytkownika",
+        "form_username_placeholder": "np. jankowalski",
+        "form_password": "Hasło",
+        "form_role": "Rola",
+        "form_role_user": "Użytkownik",
+        "form_role_admin": "Admin",
+        "form_save_button": "Dodaj użytkownika",
+        "toast_success_title": "Użytkownik dodany",
+        "toast_success_description": "Użytkownik {{name}} został pomyślnie dodany."
     }
 }

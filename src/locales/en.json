@@ -6,7 +6,8 @@
         "opportunities": "Opportunities",
         "tasks": "Tasks",
         "interactions": "Interactions",
-        "ai_email": "AI Email"
+        "ai_email": "AI Email",
+        "admin": "Admin"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -199,5 +200,28 @@
         "save_button": "Save Task",
         "toast_success_title": "Task Saved",
         "toast_success_description": "The new task has been successfully saved."
+    },
+    "admin_page": {
+        "title": "Admin Panel",
+        "description": "Manage users and system settings.",
+        "table_name": "Name",
+        "table_email": "Email",
+        "table_username": "Username",
+        "table_role": "Role",
+        "form_title": "Add New User",
+        "form_description": "Create a new user account.",
+        "form_name": "Full Name",
+        "form_name_placeholder": "e.g., John Doe",
+        "form_email": "Email",
+        "form_email_placeholder": "e.g., john.d@example.com",
+        "form_username": "Username",
+        "form_username_placeholder": "e.g., johndoe",
+        "form_password": "Password",
+        "form_role": "Role",
+        "form_role_user": "User",
+        "form_role_admin": "Admin",
+        "form_save_button": "Add User",
+        "toast_success_title": "User Added",
+        "toast_success_description": "The user {{name}} has been successfully added."
     }
 }

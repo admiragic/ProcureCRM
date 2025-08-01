@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import Logo from '@/components/logo';
-import { Home, Users, Briefcase, CheckSquare, BrainCircuit, ClipboardList } from 'lucide-react';
+import { Home, Users, Briefcase, CheckSquare, BrainCircuit, ClipboardList, Shield } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { useAuth } from '@/context/auth-context';
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   const menuItems = [
     { href: '/', label: t('sidebar.dashboard'), icon: Home },
@@ -20,6 +22,10 @@ export function AppSidebar() {
     { href: '/interactions', label: t('sidebar.interactions'), icon: ClipboardList },
     { href: '/ai-tools/email-generator', label: t('sidebar.ai_email'), icon: BrainCircuit },
   ];
+
+  if (user?.role === 'admin') {
+    menuItems.push({ href: '/admin', label: t('sidebar.admin'), icon: Shield });
+  }
 
   return (
     <Sidebar>
