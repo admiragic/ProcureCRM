@@ -29,20 +29,22 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Sparkles, Clipboard, Check } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const formSchema = z.object({
-  clientName: z.string().min(2, 'Client name is required.'),
-  recentInteractions: z.string().min(10, 'Please describe recent interactions.'),
-  opportunityStage: z.enum(['lead', 'prospect', 'customer']),
-  assignedSalesperson: z.string().min(2, 'Salesperson name is required.'),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { useLanguage } from '@/context/language-context';
 
 export function EmailGeneratorForm() {
+  const { t } = useLanguage();
   const [result, setResult] = useState<GenerateFollowUpEmailOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+
+  const formSchema = z.object({
+    clientName: z.string().min(2, t('email_generator.client_name_required')),
+    recentInteractions: z.string().min(10, t('email_generator.interactions_required')),
+    opportunityStage: z.enum(['lead', 'prospect', 'customer']),
+    assignedSalesperson: z.string().min(2, t('email_generator.salesperson_required')),
+  });
+  
+  type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -80,8 +82,8 @@ export function EmailGeneratorForm() {
     <div className="grid md:grid-cols-2 gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Client Information</CardTitle>
-          <CardDescription>Provide details to personalize the email.</CardDescription>
+          <CardTitle>{t('email_generator.form_title')}</CardTitle>
+          <CardDescription>{t('email_generator.form_description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -91,9 +93,9 @@ export function EmailGeneratorForm() {
                 name="clientName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Client Name</FormLabel>
+                    <FormLabel>{t('email_generator.client_name')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Jane Doe from Innovate Inc." {...field} />
+                      <Input placeholder={t('email_generator.client_name_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -104,17 +106,17 @@ export function EmailGeneratorForm() {
                 name="opportunityStage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Opportunity Stage</FormLabel>
+                    <FormLabel>{t('email_generator.opportunity_stage')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a stage" />
+                          <SelectValue placeholder={t('email_generator.select_stage')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="lead">Lead</SelectItem>
-                        <SelectItem value="prospect">Prospect</SelectItem>
-                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="lead">{t('client_form.lead')}</SelectItem>
+                        <SelectItem value="prospect">{t('client_form.prospect')}</SelectItem>
+                        <SelectItem value="customer">{t('client_form.customer')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -126,10 +128,10 @@ export function EmailGeneratorForm() {
                 name="recentInteractions"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Recent Interactions</FormLabel>
+                    <FormLabel>{t('email_generator.recent_interactions')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., Had a 30-min demo call yesterday, they were interested in feature X..."
+                        placeholder={t('email_generator.interactions_placeholder')}
                         className="resize-none"
                         {...field}
                       />
@@ -143,9 +145,9 @@ export function EmailGeneratorForm() {
                 name="assignedSalesperson"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Assigned Salesperson</FormLabel>
+                    <FormLabel>{t('email_generator.assigned_salesperson')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., John Smith" {...field} />
+                      <Input placeholder={t('email_generator.salesperson_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -153,10 +155,10 @@ export function EmailGeneratorForm() {
               />
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? (
-                    'Generating...'
+                    t('email_generator.generating_button')
                 ) : (
                     <>
-                        <Sparkles className="mr-2 h-4 w-4" /> Generate Email
+                        <Sparkles className="mr-2 h-4 w-4" /> {t('email_generator.generate_button')}
                     </>
                 )}
               </Button>
@@ -168,8 +170,8 @@ export function EmailGeneratorForm() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
-                <CardTitle>Generated Email</CardTitle>
-                <CardDescription>Review and copy the AI-generated content.</CardDescription>
+                <CardTitle>{t('email_generator.result_title')}</CardTitle>
+                <CardDescription>{t('email_generator.result_description')}</CardDescription>
             </div>
             {result && (
                  <Button variant="outline" size="icon" onClick={handleCopy}>
@@ -197,7 +199,7 @@ export function EmailGeneratorForm() {
             )}
             {!isLoading && !result && (
                  <div className="flex items-center justify-center h-80 border-2 border-dashed rounded-lg">
-                    <p className="text-muted-foreground">Your generated email will appear here.</p>
+                    <p className="text-muted-foreground">{t('email_generator.result_placeholder')}</p>
                 </div>
             )}
         </CardContent>

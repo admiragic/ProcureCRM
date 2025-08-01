@@ -22,21 +22,24 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save } from "lucide-react";
-
-const clientFormSchema = z.object({
-  companyName: z.string().min(2, "Naziv tvrtke je obavezan."),
-  contactPerson: z.string().min(2, "Kontakt osoba je obavezna."),
-  email: z.string().email("Neispravna email adresa."),
-  phone: z.string().min(6, "Broj telefona je obavezan."),
-  address: z.string().min(5, "Adresa je obavezna."),
-  industry: z.string().min(2, "Industrija je obavezna."),
-  type: z.enum(["lead", "prospect", "customer"]),
-  status: z.enum(["active", "inactive", "archived"]),
-});
-
-type ClientFormValues = z.infer<typeof clientFormSchema>;
+import { useLanguage } from "@/context/language-context";
 
 export function ClientForm() {
+  const { t } = useLanguage();
+
+  const clientFormSchema = z.object({
+    companyName: z.string().min(2, t('client_form.company_name_required')),
+    contactPerson: z.string().min(2, t('client_form.contact_person_required')),
+    email: z.string().email(t('client_form.email_invalid')),
+    phone: z.string().min(6, t('client_form.phone_required')),
+    address: z.string().min(5, t('client_form.address_required')),
+    industry: z.string().min(2, t('client_form.industry_required')),
+    type: z.enum(["lead", "prospect", "customer"]),
+    status: z.enum(["active", "inactive", "archived"]),
+  });
+  
+  type ClientFormValues = z.infer<typeof clientFormSchema>;
+
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema),
     defaultValues: {
@@ -59,9 +62,9 @@ export function ClientForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Podaci o klijentu</CardTitle>
+        <CardTitle>{t('client_form.title')}</CardTitle>
         <CardDescription>
-          Unesite detalje i kliknite na spremi.
+          {t('client_form.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,9 +76,9 @@ export function ClientForm() {
                 name="companyName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Naziv tvrtke</FormLabel>
+                    <FormLabel>{t('client_form.company_name')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="npr. Inovacije d.o.o." {...field} />
+                      <Input placeholder={t('client_form.company_name_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -86,9 +89,9 @@ export function ClientForm() {
                 name="contactPerson"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kontakt osoba</FormLabel>
+                    <FormLabel>{t('client_form.contact_person')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="npr. Ana Horvat" {...field} />
+                      <Input placeholder={t('client_form.contact_person_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,9 +102,9 @@ export function ClientForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('client_form.email')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="npr. ana.h@inovacije.com" {...field} />
+                      <Input placeholder={t('client_form.email_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -112,9 +115,9 @@ export function ClientForm() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Telefon</FormLabel>
+                    <FormLabel>{t('client_form.phone')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="npr. 123-456-7890" {...field} />
+                      <Input placeholder={t('client_form.phone_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -125,9 +128,9 @@ export function ClientForm() {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Adresa</FormLabel>
+                    <FormLabel>{t('client_form.address')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="npr. Tehnološki park 123, Zagreb" {...field} />
+                      <Input placeholder={t('client_form.address_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -138,9 +141,9 @@ export function ClientForm() {
                 name="industry"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Industrija</FormLabel>
+                    <FormLabel>{t('client_form.industry')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="npr. Tehnologija" {...field} />
+                      <Input placeholder={t('client_form.industry_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -151,17 +154,17 @@ export function ClientForm() {
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tip</FormLabel>
+                    <FormLabel>{t('client_form.type')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Odaberite tip klijenta" />
+                          <SelectValue placeholder={t('client_form.select_type')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="lead">Potencijalni klijent</SelectItem>
-                        <SelectItem value="prospect">Izgled</SelectItem>
-                        <SelectItem value="customer">Kupac</SelectItem>
+                        <SelectItem value="lead">{t('client_form.lead')}</SelectItem>
+                        <SelectItem value="prospect">{t('client_form.prospect')}</SelectItem>
+                        <SelectItem value="customer">{t('client_form.customer')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -173,17 +176,17 @@ export function ClientForm() {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>{t('client_form.status')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Odaberite status" />
+                          <SelectValue placeholder={t('client_form.select_status')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="active">Aktivan</SelectItem>
-                        <SelectItem value="inactive">Neaktivan</SelectItem>
-                        <SelectItem value="archived">Arhiviran</SelectItem>
+                        <SelectItem value="active">{t('client_form.active')}</SelectItem>
+                        <SelectItem value="inactive">{t('client_form.inactive')}</SelectItem>
+                        <SelectItem value="archived">{t('client_form.archived')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -194,7 +197,7 @@ export function ClientForm() {
             <div className="flex justify-end">
               <Button type="submit">
                 <Save className="mr-2 h-4 w-4" />
-                Spremi klijenta
+                {t('client_form.save_button')}
               </Button>
             </div>
           </form>
