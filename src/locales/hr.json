@@ -1,0 +1,35 @@
+
+{
+    "sidebar": {
+        "dashboard": "Nadzorna ploča",
+        "clients": "Klijenti",
+        "opportunities": "Prilike",
+        "tasks": "Zadaci",
+        "interactions": "Interakcije",
+        "ai_email": "AI Email"
+    },
+    "dashboard": {
+        "title": "Nadzorna ploča",
+        "description": "Dobrodošli natrag, evo pregleda vaše prodaje.",
+        "total_revenue": "Ukupni prihod",
+        "from_all_won_deals": "Od svih dobivenih poslova",
+        "clients": "Klijenti",
+        "total_managed_clients": "Ukupno upravljanih klijenata",
+        "active_deals": "Aktivni poslovi",
+        "opportunities_in_pipeline": "Prilike u pripremi",
+        "overdue_tasks": "Zakašnjeli zadaci",
+        "require_immediate_attention": "Zahtijevaju hitnu pažnju",
+        "sales_funnel": "Prodajni lijevak",
+        "upcoming_tasks": "Nadolazeći zadaci",
+        "tasks_due_in_next_7_days": "Zadaci koji dospijevaju u sljedećih 7 dana.",
+        "due_date": "Rok: {{date}}",
+        "recent_activity": "Nedavna aktivnost",
+        "log_of_recent_client_interactions": "Zapis posljednjih interakcija s klijentima."
+    },
+    "user_nav": {
+        "profile": "Profil",
+        "billing": "Naplata",
+        "settings": "Postavke",
+        "logout": "Odjava"
+    }
+}

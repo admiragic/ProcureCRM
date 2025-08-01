@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -27,8 +28,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DollarSign, Users, Briefcase, Activity, CheckCircle, Clock } from "lucide-react";
 import { format, parseISO } from 'date-fns';
+import { useLanguage } from "@/context/language-context";
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const totalClients = clients.length;
   const activeDeals = opportunities.filter(o => o.stage !== 'won' && o.stage !== 'lost').length;
   const totalRevenue = opportunities.filter(o => o.stage === 'won').reduce((sum, o) => sum + o.value, 0);
@@ -54,53 +57,53 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Nadzorna ploča" description="Dobrodošli natrag, evo pregleda vaše prodaje." />
+      <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ukupni prihod</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.total_revenue')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Od svih dobivenih poslova</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.from_all_won_deals')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Klijenti</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.clients')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalClients}</div>
-            <p className="text-xs text-muted-foreground">Ukupno upravljanih klijenata</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.total_managed_clients')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aktivni poslovi</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.active_deals')}</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeDeals}</div>
-            <p className="text-xs text-muted-foreground">Prilike u pripremi</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.opportunities_in_pipeline')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Zakašnjeli zadaci</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.overdue_tasks')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{overdueTasks}</div>
-            <p className="text-xs text-muted-foreground">Zahtijevaju hitnu pažnju</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.require_immediate_attention')}</p>
           </CardContent>
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-6">
         <Card className="lg:col-span-4">
           <CardHeader>
-            <CardTitle>Prodajni lijevak</CardTitle>
+            <CardTitle>{t('dashboard.sales_funnel')}</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -119,8 +122,8 @@ export default function DashboardPage() {
         </Card>
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Nadolazeći zadaci</CardTitle>
-            <CardDescription>Zadaci koji dospijevaju u sljedećih 7 dana.</CardDescription>
+            <CardTitle>{t('dashboard.upcoming_tasks')}</CardTitle>
+            <CardDescription>{t('dashboard.tasks_due_in_next_7_days')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -129,7 +132,7 @@ export default function DashboardPage() {
                   {task.completed ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">{task.title}</p>
-                    <p className="text-sm text-muted-foreground">Rok: {format(parseISO(task.dueDate), 'dd.MM.yyyy')}</p>
+                    <p className="text-sm text-muted-foreground">{t('dashboard.due_date', { date: format(parseISO(task.dueDate), 'dd.MM.yyyy') })}</p>
                   </div>
                   <div className="ml-auto font-medium text-sm">{task.client?.companyName}</div>
                 </div>
@@ -141,8 +144,8 @@ export default function DashboardPage() {
        <div className="grid gap-4 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Nedavna aktivnost</CardTitle>
-              <CardDescription>Zapis posljednjih interakcija s klijentima.</CardDescription>
+              <CardTitle>{t('dashboard.recent_activity')}</CardTitle>
+              <CardDescription>{t('dashboard.log_of_recent_client_interactions')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>

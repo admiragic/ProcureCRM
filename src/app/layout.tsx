@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppHeader } from "@/components/layout/app-header";
+import { LanguageProvider } from "@/context/language-context";
 
 export const metadata: Metadata = {
   title: "ProcureCRM",
@@ -47,17 +48,19 @@ export default function RootLayout({
           sourceCodePro.variable
         )}
       >
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <div className="flex flex-col min-h-screen">
-              <AppHeader />
-              <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                {children}
-              </main>
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
+        <LanguageProvider>
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <div className="flex flex-col min-h-screen">
+                <AppHeader />
+                <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                  {children}
+                </main>
+              </div>
+            </SidebarInset>
+          </SidebarProvider>
+        </LanguageProvider>
         <Toaster />
       </body>
     </html>

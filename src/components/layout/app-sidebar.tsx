@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -5,18 +6,20 @@ import { usePathname } from 'next/navigation';
 import { Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import Logo from '@/components/logo';
 import { Home, Users, Briefcase, CheckSquare, BrainCircuit, ClipboardList } from 'lucide-react';
-
-const menuItems = [
-  { href: '/', label: 'Nadzorna ploča', icon: Home },
-  { href: '/clients', label: 'Klijenti', icon: Users },
-  { href: '/opportunities', label: 'Prilike', icon: Briefcase },
-  { href: '/tasks', label: 'Zadaci', icon: CheckSquare },
-  { href: '/interactions', label: 'Interakcije', icon: ClipboardList },
-  { href: '/ai-tools/email-generator', label: 'AI Email', icon: BrainCircuit },
-];
+import { useLanguage } from '@/context/language-context';
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { t } = useLanguage();
+
+  const menuItems = [
+    { href: '/', label: t('sidebar.dashboard'), icon: Home },
+    { href: '/clients', label: t('sidebar.clients'), icon: Users },
+    { href: '/opportunities', label: t('sidebar.opportunities'), icon: Briefcase },
+    { href: '/tasks', label: t('sidebar.tasks'), icon: CheckSquare },
+    { href: '/interactions', label: t('sidebar.interactions'), icon: ClipboardList },
+    { href: '/ai-tools/email-generator', label: t('sidebar.ai_email'), icon: BrainCircuit },
+  ];
 
   return (
     <Sidebar>

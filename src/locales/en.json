@@ -1,0 +1,35 @@
+
+{
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "clients": "Clients",
+        "opportunities": "Opportunities",
+        "tasks": "Tasks",
+        "interactions": "Interactions",
+        "ai_email": "AI Email"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "description": "Welcome back, here's your sales overview.",
+        "total_revenue": "Total Revenue",
+        "from_all_won_deals": "From all won deals",
+        "clients": "Clients",
+        "total_managed_clients": "Total managed clients",
+        "active_deals": "Active Deals",
+        "opportunities_in_pipeline": "Opportunities in the pipeline",
+        "overdue_tasks": "Overdue Tasks",
+        "require_immediate_attention": "Require immediate attention",
+        "sales_funnel": "Sales Funnel",
+        "upcoming_tasks": "Upcoming Tasks",
+        "tasks_due_in_next_7_days": "Tasks due in the next 7 days.",
+        "due_date": "Due date: {{date}}",
+        "recent_activity": "Recent Activity",
+        "log_of_recent_client_interactions": "A log of the latest client interactions."
+    },
+    "user_nav": {
+        "profile": "Profile",
+        "billing": "Billing",
+        "settings": "Settings",
+        "logout": "Log out"
+    }
+}

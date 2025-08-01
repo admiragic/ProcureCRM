@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { UserNav } from "@/components/user-nav"
 import { ThemeSwitcher } from "@/components/theme-switcher"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 export function AppHeader() {
   return (
@@ -22,6 +23,7 @@ export function AppHeader() {
           </div>
         </form>
       </div>
+      <LanguageSwitcher />
       <ThemeSwitcher />
       <UserNav />
     </header>

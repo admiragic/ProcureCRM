@@ -1,0 +1,35 @@
+
+{
+    "sidebar": {
+        "dashboard": "Panel",
+        "clients": "Klienci",
+        "opportunities": "Szanse",
+        "tasks": "Zadania",
+        "interactions": "Interakcje",
+        "ai_email": "AI Email"
+    },
+    "dashboard": {
+        "title": "Panel",
+        "description": "Witaj z powrotem, oto przegląd Twojej sprzedaży.",
+        "total_revenue": "Całkowity przychód",
+        "from_all_won_deals": "Ze wszystkich wygranych transakcji",
+        "clients": "Klienci",
+        "total_managed_clients": "Łączna liczba zarządzanych klientów",
+        "active_deals": "Aktywne transakcje",
+        "opportunities_in_pipeline": "Szanse w trakcie realizacji",
+        "overdue_tasks": "Zaległe zadania",
+        "require_immediate_attention": "Wymagają natychmiastowej uwagi",
+        "sales_funnel": "Lejek sprzedażowy",
+        "upcoming_tasks": "Nadchodzące zadania",
+        "tasks_due_in_next_7_days": "Zadania do wykonania w ciągu najbliższych 7 dni.",
+        "due_date": "Termin: {{date}}",
+        "recent_activity": "Ostatnia aktywność",
+        "log_of_recent_client_interactions": "Rejestr ostatnich interakcji z klientami."
+    },
+    "user_nav": {
+        "profile": "Profil",
+        "billing": "Rozliczenia",
+        "settings": "Ustawienia",
+        "logout": "Wyloguj się"
+    }
+}
