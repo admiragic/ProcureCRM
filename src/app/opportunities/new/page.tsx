@@ -1,3 +1,6 @@
+
+'use client';
+
 import { PageHeader } from "@/components/page-header";
 import { OpportunityForm } from "@/components/opportunity-form";
 import { useLanguage } from "@/context/language-context";
