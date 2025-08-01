@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/context/language-context"
 import { useAuth } from "@/context/auth-context"
+import Link from "next/link"
 
 export function UserNav() {
   const { t } = useLanguage();
@@ -49,17 +50,23 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            {t('user_nav.profile')}
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              {t('user_nav.profile')}
+              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            {t('user_nav.billing')}
-            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+          <DropdownMenuItem asChild>
+            <Link href="/billing">
+              {t('user_nav.billing')}
+              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            {t('user_nav.settings')}
-            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+          <DropdownMenuItem asChild>
+            <Link href="/settings">
+              {t('user_nav.settings')}
+              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
