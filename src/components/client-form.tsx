@@ -23,9 +23,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
+import { useToast } from "@/hooks/use-toast";
 
 export function ClientForm() {
   const { t } = useLanguage();
+  const { toast } = useToast();
 
   const clientFormSchema = z.object({
     companyName: z.string().min(2, t('client_form.company_name_required')),
@@ -56,7 +58,10 @@ export function ClientForm() {
 
   function onSubmit(values: ClientFormValues) {
     console.log(values);
-    // TODO: Implement saving logic
+    toast({
+        title: t('client_form.toast_success_title'),
+        description: t('client_form.toast_success_description', { companyName: values.companyName }),
+      });
   }
 
   return (

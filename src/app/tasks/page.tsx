@@ -1,19 +1,38 @@
+
+'use client';
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { tasks } from "@/lib/data";
+import { tasks as initialTasks } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { PlusCircle } from "lucide-react";
 import { format, isPast, isToday, parseISO } from "date-fns";
+import Link from "next/link";
+import { useLanguage } from "@/context/language-context";
+import { useState } from "react";
+import type { Task } from "@/lib/types";
 
 export default function TasksPage() {
+    const { t } = useLanguage();
+    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+
+    const handleTaskCompletion = (taskId: string, completed: boolean) => {
+        setTasks(currentTasks =>
+            currentTasks.map(task =>
+                task.id === taskId ? { ...task, completed } : task
+            )
+        );
+    };
+
   return (
     <>
-      <PageHeader title="Tasks" description="Manage your to-do list.">
-        <Button>
+      <PageHeader title={t('sidebar.tasks')} description={t('tasks_page.description')}>
+        <Button asChild>
+            <Link href="/tasks/new">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Task
+          {t('tasks_page.add_button')}
+          </Link>
         </Button>
       </PageHeader>
       <Card>
@@ -26,7 +45,7 @@ export default function TasksPage() {
                 const isOverdue = !task.completed && isPast(dueDate) && !isToday(dueDate);
                 return (
                   <li key={task.id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
-                    <Checkbox id={`task-${task.id}`} checked={task.completed} aria-label={`Mark task '${task.title}' as complete`} />
+                    <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => handleTaskCompletion(task.id, !!checked)} aria-label={`Mark task '${task.title}' as complete`} />
                     <div className="flex-1 grid gap-1">
                       <label htmlFor={`task-${task.id}`} className={cn("font-medium", task.completed && "line-through text-muted-foreground")}>{task.title}</label>
                       {task.client && <p className="text-sm text-muted-foreground">{task.client.companyName}</p>}

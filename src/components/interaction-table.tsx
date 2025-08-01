@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -40,8 +41,43 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { Interaction } from "@/lib/types"
 import { Card } from "@/components/ui/card"
+import { useLanguage } from "@/context/language-context"
+import Link from "next/link"
 
-const columns: ColumnDef<Interaction>[] = [
+const ActionCell = ({ row }: { row: any }) => {
+    const { t } = useLanguage();
+    const interaction = row.original;
+
+    const handleDelete = () => {
+        alert(t('interaction_table.delete_alert', { id: interaction.id }));
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">{t('interaction_table.open_menu')}</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{t('interaction_table.actions')}</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(interaction.id)}>
+                    {t('interaction_table.copy_id')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href={`/interactions/new`}>{t('interaction_table.edit_button')}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
+                    {t('interaction_table.delete_button')}
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
+export const columns: ColumnDef<Interaction>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -136,34 +172,12 @@ const columns: ColumnDef<Interaction>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const interaction = row.original
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(interaction.id)}
-            >
-              Copy interaction ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ActionCell,
   },
 ]
 
 export function InteractionTable({ data }: { data: Interaction[] }) {
+  const { t } = useLanguage();
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -195,7 +209,7 @@ export function InteractionTable({ data }: { data: Interaction[] }) {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter by notes..."
+          placeholder={t('interaction_table.filter_placeholder')}
           value={(table.getColumn("notes")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("notes")?.setFilterValue(event.target.value)
@@ -205,7 +219,7 @@ export function InteractionTable({ data }: { data: Interaction[] }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t('client_table.columns_button')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -273,7 +287,7 @@ export function InteractionTable({ data }: { data: Interaction[] }) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('client_table.no_results')}
                 </TableCell>
               </TableRow>
             )}
@@ -283,8 +297,10 @@ export function InteractionTable({ data }: { data: Interaction[] }) {
       </Card>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+           {t('client_table.selected_rows', { 
+            selected: table.getFilteredSelectedRowModel().rows.length, 
+            total: table.getFilteredRowModel().rows.length 
+          })}
         </div>
         <div className="space-x-2">
           <Button
@@ -293,7 +309,7 @@ export function InteractionTable({ data }: { data: Interaction[] }) {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {t('client_table.previous_button')}
           </Button>
           <Button
             variant="outline"
@@ -301,7 +317,7 @@ export function InteractionTable({ data }: { data: Interaction[] }) {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {t('client_table.next_button')}
           </Button>
         </div>
       </div>

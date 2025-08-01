@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format, parseISO } from "date-fns";
 import type { Opportunity } from "@/lib/types";
+import Link from "next/link";
+import { useLanguage } from "@/context/language-context";
 
 const stageProgress: Record<Opportunity['stage'], number> = {
   lead: 10,
@@ -33,15 +35,24 @@ const stageColor: Record<Opportunity['stage'], string> = {
 }
 
 export default function OpportunitiesPage() {
+    const { t } = useLanguage();
+
+  const handleDelete = (id: string) => {
+    alert(`Deleting opportunity ${id}`);
+    // Here you would typically call an API to delete the opportunity
+  };
+
   return (
     <>
       <PageHeader
-        title="Opportunities"
-        description="Track your deals and sales pipeline."
+        title={t('sidebar.opportunities')}
+        description={t('opportunities_page.description')}
       >
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Opportunity
+        <Button asChild>
+          <Link href="/opportunities/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {t('opportunities_page.add_button')}
+          </Link>
         </Button>
       </PageHeader>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -51,7 +62,7 @@ export default function OpportunitiesPage() {
               <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg">{opp.client?.companyName}</CardTitle>
-                    <CardDescription>Value: ${opp.value.toLocaleString()}</CardDescription>
+                    <CardDescription>{t('opportunities_page.value')}: ${opp.value.toLocaleString()}</CardDescription>
                   </div>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -60,9 +71,15 @@ export default function OpportunitiesPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>View Client</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-500">Delete</DropdownMenuItem>
+                       <DropdownMenuItem asChild>
+                         <Link href={`/opportunities/new`}>{t('opportunities_page.edit_button')}</Link>
+                      </DropdownMenuItem>
+                       <DropdownMenuItem asChild>
+                        <Link href={`/clients`}>{t('opportunities_page.view_client_button')}</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(opp.id)}>
+                        {t('opportunities_page.delete_button')}
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
               </div>
@@ -76,7 +93,7 @@ export default function OpportunitiesPage() {
             </CardContent>
             <CardFooter>
               <p className="text-sm text-muted-foreground">
-                Est. Close Date: {format(parseISO(opp.closingDate), "MMM dd, yyyy")}
+                {t('opportunities_page.est_close_date')}: {format(parseISO(opp.closingDate), "MMM dd, yyyy")}
               </p>
             </CardFooter>
           </Card>
