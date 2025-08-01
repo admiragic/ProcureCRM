@@ -1,3 +1,6 @@
+
+'use client';
+
 import { PageHeader } from "@/components/page-header";
 import { TaskForm } from "@/components/task-form";
 import { useLanguage } from "@/context/language-context";
