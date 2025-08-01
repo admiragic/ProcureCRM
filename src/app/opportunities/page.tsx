@@ -65,7 +65,7 @@ export default function OpportunitiesPage() {
               <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg">{opp.client?.companyName}</CardTitle>
-                    <CardDescription>{t('opportunities_page.value')}: ${opp.value.toLocaleString()}</CardDescription>
+                    <CardDescription>{t('opportunities_page.value')}: {opp.value.toLocaleString()} EUR</CardDescription>
                   </div>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>

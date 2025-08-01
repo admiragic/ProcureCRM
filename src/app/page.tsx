@@ -65,7 +65,7 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} EUR</div>
             <p className="text-xs text-muted-foreground">{t('dashboard.from_all_won_deals')}</p>
           </CardContent>
         </Card>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-6">
         <Card className="lg:col-span-4">
           <CardHeader>
-            <CardTitle>{t('dashboard.sales_funnel')}</CardTitle>
+            <CardTitle>{t('dashboard.sales_overview')}</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <ChartContainer config={chartConfig} className="h-[300px] w-full">

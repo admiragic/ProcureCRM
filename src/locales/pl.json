@@ -20,7 +20,7 @@
         "opportunities_in_pipeline": "Szanse w trakcie realizacji",
         "overdue_tasks": "Zaległe zadania",
         "require_immediate_attention": "Wymagają natychmiastowej uwagi",
-        "sales_funnel": "Lejek sprzedażowy",
+        "sales_overview": "Przegląd sprzedaży",
         "upcoming_tasks": "Nadchodzące zadania",
         "tasks_due_in_next_7_days": "Zadania do wykonania w ciągu najbliższych 7 dni.",
         "due_date": "Termin: {{date}}",
@@ -140,7 +140,7 @@
         "notes_required": "Notatki są wymagane.",
         "save_button": "Zapisz interakcję",
         "toast_success_title": "Interakcja zapisana",
-        "toast_success_description": "Interakcja została pomyślnie zarejestrowana."
+        "toast_success_description": "Interakcija została pomyślnie zarejestrowana."
     },
     "opportunities_page": {
         "description": "Śledź swoje transakcje i lejek sprzedaży.",
@@ -167,7 +167,7 @@
         "stage_negotiation": "Negocjacje",
         "stage_won": "Wygrana",
         "stage_lost": "Przegrana",
-        "value": "Wartość (zł)",
+        "value": "Wartość (EUR)",
         "value_required": "Wartość musi być liczbą dodatnią.",
         "closing_date": "Szacowana data zamknięcia",
         "closing_date_required": "Data zamknięcia jest wymagana.",
