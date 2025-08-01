@@ -7,11 +7,11 @@ import Logo from '@/components/logo';
 import { Home, Users, Briefcase, CheckSquare, BrainCircuit, ClipboardList } from 'lucide-react';
 
 const menuItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/opportunities', label: 'Opportunities', icon: Briefcase },
-  { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-  { href: '/interactions', label: 'Interactions', icon: ClipboardList },
+  { href: '/', label: 'Nadzorna ploča', icon: Home },
+  { href: '/clients', label: 'Klijenti', icon: Users },
+  { href: '/opportunities', label: 'Prilike', icon: Briefcase },
+  { href: '/tasks', label: 'Zadaci', icon: CheckSquare },
+  { href: '/interactions', label: 'Interakcije', icon: ClipboardList },
   { href: '/ai-tools/email-generator', label: 'AI Email', icon: BrainCircuit },
 ];
 

@@ -54,53 +54,53 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Welcome back, here's your sales overview." />
+      <PageHeader title="Nadzorna ploča" description="Dobrodošli natrag, evo pregleda vaše prodaje." />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Ukupni prihod</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">From all won deals</p>
+            <p className="text-xs text-muted-foreground">Od svih dobivenih poslova</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clients</CardTitle>
+            <CardTitle className="text-sm font-medium">Klijenti</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalClients}</div>
-            <p className="text-xs text-muted-foreground">Total managed clients</p>
+            <p className="text-xs text-muted-foreground">Ukupno upravljanih klijenata</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
+            <CardTitle className="text-sm font-medium">Aktivni poslovi</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeDeals}</div>
-            <p className="text-xs text-muted-foreground">Opportunities in pipeline</p>
+            <p className="text-xs text-muted-foreground">Prilike u pripremi</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue Tasks</CardTitle>
+            <CardTitle className="text-sm font-medium">Zakasnjeli zadaci</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{overdueTasks}</div>
-            <p className="text-xs text-muted-foreground">Require immediate attention</p>
+            <p className="text-xs text-muted-foreground">Zahtijevaju hitnu pažnju</p>
           </CardContent>
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-6">
         <Card className="lg:col-span-4">
           <CardHeader>
-            <CardTitle>Opportunities Pipeline</CardTitle>
+            <CardTitle>Prodajni lijevak</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -119,8 +119,8 @@ export default function DashboardPage() {
         </Card>
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Upcoming Tasks</CardTitle>
-            <CardDescription>Tasks due in the next 7 days.</CardDescription>
+            <CardTitle>Nadolazeći zadaci</CardTitle>
+            <CardDescription>Zadaci koji dospijevaju u sljedećih 7 dana.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                   {task.completed ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">{task.title}</p>
-                    <p className="text-sm text-muted-foreground">Due: {format(parseISO(task.dueDate), 'MMM dd, yyyy')}</p>
+                    <p className="text-sm text-muted-foreground">Rok: {format(parseISO(task.dueDate), 'dd.MM.yyyy')}</p>
                   </div>
                   <div className="ml-auto font-medium text-sm">{task.client?.companyName}</div>
                 </div>
@@ -141,18 +141,18 @@ export default function DashboardPage() {
        <div className="grid gap-4 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>A log of the latest interactions with clients.</CardDescription>
+              <CardTitle>Nedavna aktivnost</CardTitle>
+              <CardDescription>Zapis posljednjih interakcija s klijentima.</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Salesperson</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Notes</TableHead>
+                    <TableHead>Klijent</TableHead>
+                    <TableHead>Vrsta</TableHead>
+                    <TableHead>Prodavač</TableHead>
+                    <TableHead>Datum</TableHead>
+                    <TableHead className="text-right">Bilješke</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
                         <Badge variant="secondary">{interaction.type}</Badge>
                       </TableCell>
                       <TableCell>{interaction.salesperson}</TableCell>
-                      <TableCell>{format(parseISO(interaction.date), "MMM dd, yyyy")}</TableCell>
+                      <TableCell>{format(parseISO(interaction.date), "dd.MM.yyyy")}</TableCell>
                       <TableCell className="text-right text-muted-foreground text-xs truncate max-w-xs">{interaction.notes}</TableCell>
                     </TableRow>
                   ))}
