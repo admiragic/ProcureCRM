@@ -51,7 +51,7 @@ export default function TasksPage() {
                       {task.client && <p className="text-sm text-muted-foreground">{task.client.companyName}</p>}
                     </div>
                     <div className="text-sm text-muted-foreground">{task.assignedTo}</div>
-                    <div className={cn("text-sm font-medium", isOverdue ? "text-red-500" : "text-muted-foreground")}>
+                    <div className={cn("text-sm font-medium", isOverdue ? "text-destructive" : "text-muted-foreground")}>
                       {format(dueDate, "MMM dd")}
                     </div>
                   </li>
