@@ -17,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userList, setUserList] = useState<User[]>(users);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
@@ -27,6 +28,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
         console.error("Failed to parse user from localStorage", error);
         localStorage.removeItem('user');
+    } finally {
+        setLoading(false);
     }
   }, []);
 
@@ -34,8 +37,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const foundUser = userList.find(u => u.username === username && u.password === pass);
     if (foundUser) {
       const userToStore = { id: foundUser.id, username: foundUser.username, role: foundUser.role, name: foundUser.name, email: foundUser.email };
-      setUser(userToStore);
       localStorage.setItem('user', JSON.stringify(userToStore));
+      setUser(userToStore);
     } else {
       throw new Error('Invalid username or password');
     }
@@ -57,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, login, logout, addUser, getUsers }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
