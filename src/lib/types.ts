@@ -37,5 +37,6 @@ export type Task = {
   dueDate: string;
   assignedTo: string;
   completed: boolean;
+  timeEstimate: number;
   client?: Client | null;
 };

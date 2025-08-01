@@ -199,7 +199,11 @@
         "pick_a_date": "Pick a date",
         "save_button": "Save Task",
         "toast_success_title": "Task Saved",
-        "toast_success_description": "The new task has been successfully saved."
+        "toast_success_description": "The new task has been successfully saved.",
+        "time_estimate": "Time Estimate (hours)",
+        "time_estimate_placeholder": "e.g., 8",
+        "time_estimate_required": "Time estimate is required.",
+        "total_time": "Total Time"
     },
     "admin_page": {
         "title": "Admin Panel",

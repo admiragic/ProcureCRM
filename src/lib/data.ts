@@ -156,6 +156,7 @@ export const tasks: Task[] = [
     dueDate: format(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3), 'yyyy-MM-dd'),
     assignedTo: 'Pero Perić',
     completed: false,
+    timeEstimate: 5,
     client: clients[1],
   },
   {
@@ -165,6 +166,7 @@ export const tasks: Task[] = [
     dueDate: format(new Date(now.getFullYear(), now.getMonth(), now.getDate()), 'yyyy-MM-dd'),
     assignedTo: 'Iva Ivić',
     completed: false,
+    timeEstimate: 1,
     client: clients[2],
   },
   {
@@ -174,6 +176,7 @@ export const tasks: Task[] = [
     dueDate: format(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 10), 'yyyy-MM-dd'),
     assignedTo: 'Iva Ivić',
     completed: false,
+    timeEstimate: 2,
     client: clients[0],
   },
   {
@@ -183,6 +186,7 @@ export const tasks: Task[] = [
     dueDate: format(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5), 'yyyy-MM-dd'),
     assignedTo: 'Admin',
     completed: true,
+    timeEstimate: 8,
     client: null,
   },
   {
@@ -192,6 +196,7 @@ export const tasks: Task[] = [
     dueDate: format(new Date(now.getFullYear(), now.getDate() - 1), 'yyyy-MM-dd'),
     assignedTo: 'Pero Perić',
     completed: true,
+    timeEstimate: 0.5,
     client: clients[1],
   },
 ];

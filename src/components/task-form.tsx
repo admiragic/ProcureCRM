@@ -45,6 +45,7 @@ export function TaskForm() {
     dueDate: z.date({
         required_error: t('task_form.due_date_required'),
     }),
+    timeEstimate: z.coerce.number().min(0, t('task_form.time_estimate_required')),
   });
   
   type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -54,7 +55,8 @@ export function TaskForm() {
     defaultValues: {
       title: "",
       clientId: null,
-      assignedTo: ""
+      assignedTo: "",
+      timeEstimate: 0,
     },
   });
 
@@ -174,6 +176,19 @@ export function TaskForm() {
                         />
                       </PopoverContent>
                     </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="timeEstimate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('task_form.time_estimate')}</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder={t('task_form.time_estimate_placeholder')} {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -199,7 +199,11 @@
         "pick_a_date": "Wybierz datę",
         "save_button": "Zapisz zadanie",
         "toast_success_title": "Zadanie zapisane",
-        "toast_success_description": "Nowe zadanie zostało pomyślnie zapisane."
+        "toast_success_description": "Nowe zadanie zostało pomyślnie zapisane.",
+        "time_estimate": "Szacowany czas (godziny)",
+        "time_estimate_placeholder": "np. 8",
+        "time_estimate_required": "Szacowany czas jest wymagany.",
+        "total_time": "Łączny czas"
     },
     "admin_page": {
         "title": "Panel Administratora",

@@ -2,15 +2,15 @@
 'use client';
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { tasks as initialTasks } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Clock } from "lucide-react";
 import { format, isPast, isToday, parseISO } from "date-fns";
 import Link from "next/link";
 import { useLanguage } from "@/context/language-context";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Task } from "@/lib/types";
 
 export default function TasksPage() {
@@ -24,6 +24,10 @@ export default function TasksPage() {
             )
         );
     };
+    
+    const totalHours = useMemo(() => {
+        return tasks.reduce((acc, task) => acc + task.timeEstimate, 0);
+    }, [tasks]);
 
   return (
     <>
@@ -51,7 +55,11 @@ export default function TasksPage() {
                       {task.client && <p className="text-sm text-muted-foreground">{task.client.companyName}</p>}
                     </div>
                     <div className="text-sm text-muted-foreground">{task.assignedTo}</div>
-                    <div className={cn("text-sm font-medium", isOverdue ? "text-destructive" : "text-muted-foreground")}>
+                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>{task.timeEstimate}h</span>
+                    </div>
+                    <div className={cn("text-sm font-medium w-20 text-right", isOverdue ? "text-destructive" : "text-muted-foreground")}>
                       {format(dueDate, "MMM dd")}
                     </div>
                   </li>
@@ -59,6 +67,9 @@ export default function TasksPage() {
               })}
           </ul>
         </CardContent>
+        <CardFooter className="justify-end font-bold p-4 border-t">
+            {t('task_form.total_time')}: {totalHours}h
+        </CardFooter>
       </Card>
     </>
   );
