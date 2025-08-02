@@ -47,9 +47,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const auth = getFirebaseAuth();
 
   useEffect(() => {
+    const auth = getFirebaseAuth();
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userData = await fetchUserDocument(firebaseUser);
@@ -61,9 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, []);
 
   const login = async (email: string, pass: string) => {
+    const auth = getFirebaseAuth();
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
     const userData = await fetchUserDocument(userCredential.user);
     setUser(userData);
@@ -71,12 +72,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    const auth = getFirebaseAuth();
     await signOut(auth);
     setUser(null);
     router.push('/login');
   };
 
   const addUser = async (newUser: User) => {
+    const auth = getFirebaseAuth();
     const db = getDb();
     if (!newUser.password) throw new Error("Password is required for new user");
     const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
