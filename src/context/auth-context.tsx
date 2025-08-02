@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, getDocs, collection, setDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, setDoc, getFirestore } from 'firebase/firestore';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase'; 
