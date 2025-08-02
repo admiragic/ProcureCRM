@@ -15,7 +15,6 @@ type AuthContextType = {
   logout: () => void;
   addUser: (user: User) => Promise<void>;
   getUsers: () => Promise<User[]>;
-  fetchUserDocument: (firebaseUser: FirebaseUser) => Promise<User | null>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,36 +24,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const fetchUserDocument = useCallback(async (firebaseUser: FirebaseUser): Promise<User | null> => {
-      if (!firebaseUser) return null;
-      try {
-          const userRef = ref(db, `users/${firebaseUser.uid}`);
-          const snapshot = await get(userRef);
-          if (snapshot.exists()) {
-              return { id: snapshot.key, ...snapshot.val() } as User;
-          }
-          console.warn("No user document found for uid:", firebaseUser.uid);
-          // Create a default user object if document doesn't exist
-          return {
-              id: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              name: firebaseUser.displayName || 'Unnamed User',
-              role: 'user',
-              username: firebaseUser.email || ''
-          };
-      } catch (error) {
-          console.error("Error fetching user document:", error);
-          return null;
-      }
-  }, []);
-
   const seedAdminUser = useCallback(async () => {
     const adminEmail = 'zoran@temporis.hr';
     const adminPassword = 'shaban$$';
 
     try {
-        // We try to create the user. If the user already exists,
-        // Firebase Auth will throw an 'auth/email-already-in-use' error, which we catch.
         const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
         const uid = userCredential.user.uid;
 
@@ -68,8 +42,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         console.log("Admin user created successfully.");
     } catch (error: any) {
-        // If the user already exists, that's fine. We can ignore the error.
-        // For any other error, we log it.
         if (error.code === 'auth/email-already-in-use') {
             console.log("Admin user already exists in Auth, no action needed.");
         } else {
@@ -83,8 +55,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const userData = await fetchUserDocument(firebaseUser);
-        setUser(userData);
+        // WORKAROUND: Instead of fetching from DB (which causes permission errors on first load),
+        // we construct a user object from the auth state.
+        // We'll assign the role based on the email for the admin user.
+        const isKnownAdmin = firebaseUser.email === 'zoran@temporis.hr';
+        const userDoc: User = {
+            id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            name: firebaseUser.displayName || 'Korisnik',
+            username: firebaseUser.email || '',
+            role: isKnownAdmin ? 'admin' : 'user'
+        };
+        setUser(userDoc);
       } else {
         setUser(null);
       }
@@ -92,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [fetchUserDocument, seedAdminUser]);
+  }, [seedAdminUser]);
   
   const login = async (email: string, pass: string) => {
     await signInWithEmailAndPassword(auth, email, pass);
@@ -135,7 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers, fetchUserDocument }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers }}>
       {children}
     </AuthContext.Provider>
   );
