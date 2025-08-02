@@ -1,29 +1,39 @@
-
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { ref, get, push, set, serverTimestamp } from 'firebase/database';
 import type { Interaction, Client } from '@/lib/types';
 
 export const getInteractions = async (): Promise<Interaction[]> => {
-    const interactionsCollection = collection(db, 'interactions');
-    const snapshot = await getDocs(interactionsCollection);
-    const interactions = await Promise.all(snapshot.docs.map(async (d) => {
-        const data = d.data();
+    const interactionsRef = ref(db, 'interactions');
+    const snapshot = await get(interactionsRef);
+    if (!snapshot.exists()) {
+        return [];
+    }
+    
+    const interactionsData = snapshot.val();
+    const interactions = await Promise.all(Object.keys(interactionsData).map(async (key) => {
+        const interaction = { id: key, ...interactionsData[key] };
         let client: Client | undefined = undefined;
-        if (data.clientId) {
-            const clientDocRef = doc(db, 'clients', data.clientId);
-            const clientDoc = await getDoc(clientDocRef);
-            if (clientDoc.exists()) {
-                client = { id: clientDoc.id, ...clientDoc.data() } as Client;
+
+        if (interaction.clientId) {
+            const clientRef = ref(db, `clients/${interaction.clientId}`);
+            const clientSnap = await get(clientRef);
+            if (clientSnap.exists()) {
+                client = { id: clientSnap.key, ...clientSnap.val() } as Client;
             }
         }
-        return { id: d.id, ...data, client, date: data.date.toDate().toISOString() } as Interaction;
+        
+        // Firebase RTDB returns timestamp as number, convert to ISO string for consistency
+        const date = new Date(interaction.date).toISOString();
+        return { ...interaction, client, date } as Interaction;
     }));
+
     return interactions;
 };
 
 export const addInteraction = async (interaction: Omit<Interaction, 'id' | 'date' | 'client'>) => {
-    const interactionsCollection = collection(db, 'interactions');
-    return await addDoc(interactionsCollection, {
+    const interactionsRef = ref(db, 'interactions');
+     const newInteractionRef = push(interactionsRef);
+    return await set(newInteractionRef, {
         ...interaction,
         date: serverTimestamp()
     });

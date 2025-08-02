@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, getDocs, collection, setDoc, query, where } from 'firebase/firestore';
+import { ref, get, set, query, orderByChild, equalTo } from 'firebase/database';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase'; 
@@ -28,10 +28,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserDocument = useCallback(async (firebaseUser: FirebaseUser): Promise<User | null> => {
       if (!firebaseUser) return null;
       try {
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          if (userDoc.exists()) {
-              return { id: userDoc.id, ...userDoc.data() } as User;
+          const userRef = ref(db, `users/${firebaseUser.uid}`);
+          const snapshot = await get(userRef);
+          if (snapshot.exists()) {
+              return { id: snapshot.key, ...snapshot.val() } as User;
           }
           console.warn("No user document found for uid:", firebaseUser.uid);
           // Create a default user object if document doesn't exist
@@ -50,19 +50,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const seedAdminUser = useCallback(async () => {
     const adminEmail = 'zoran@temporis.hr';
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where("email", "==", adminEmail));
+    const usersRef = ref(db, 'users');
+    const q = query(usersRef, orderByChild('email'), equalTo(adminEmail));
     
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await get(q);
 
-    if (querySnapshot.empty) {
+    if (!querySnapshot.exists()) {
         console.log("Admin user not found, creating one...");
         try {
             const adminPassword = 'shaban$$'; // Use a secure, generated password in a real app
             const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
             const uid = userCredential.user.uid;
-
-            await setDoc(doc(db, 'users', uid), {
+            
+            const adminUserRef = ref(db, `users/${uid}`);
+            await set(adminUserRef, {
                 username: 'zoran',
                 name: 'Zoran Admin',
                 email: adminEmail,
@@ -114,7 +115,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
         const uid = userCredential.user.uid;
         
-        await setDoc(doc(db, 'users', uid), {
+        const newUserRef = ref(db, `users/${uid}`);
+        await set(newUserRef, {
           username: newUser.username,
           name: newUser.name,
           email: newUser.email,
@@ -128,8 +130,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getUsers = async (): Promise<User[]> => {
-    const querySnapshot = await getDocs(collection(db, "users"));
-    return querySnapshot.docs.map(d => ({ id: d.id, ...d.data() } as User));
+    const usersRef = ref(db, 'users');
+    const snapshot = await get(usersRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] } as User));
+    }
+    return [];
   };
 
   return (

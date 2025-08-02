@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getDatabase, type Database } from 'firebase/database';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
@@ -10,11 +10,12 @@ const firebaseConfig = {
   storageBucket: "procurecrm.appspot.com",
   messagingSenderId: "289531756755",
   appId: "1:289531756755:web:6eed801e73589d4fd11426",
+  databaseURL: "https://procurecrm-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
 const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db: Firestore = getFirestore(app);
+const db: Database = getDatabase(app);
 const auth: Auth = getAuth(app);
 const storage: FirebaseStorage = getStorage(app);
 

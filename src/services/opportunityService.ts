@@ -1,27 +1,31 @@
-
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
+import { ref, get, push, set } from 'firebase/database';
 import type { Opportunity, Client } from '@/lib/types';
 
 export const getOpportunities = async (): Promise<Opportunity[]> => {
-    const opportunitiesCollection = collection(db, 'opportunities');
-    const snapshot = await getDocs(opportunitiesCollection);
-    const opportunities = await Promise.all(snapshot.docs.map(async (d) => {
-        const data = d.data();
+    const opportunitiesRef = ref(db, 'opportunities');
+    const snapshot = await get(opportunitiesRef);
+     if (!snapshot.exists()) {
+        return [];
+    }
+
+    const opportunitiesData = snapshot.val();
+    const opportunities = await Promise.all(Object.keys(opportunitiesData).map(async (key) => {
+        const opp = { id: key, ...opportunitiesData[key] };
         let client: Client | undefined = undefined;
-        if (data.clientId) {
-             const clientDocRef = doc(db, 'clients', data.clientId);
-            const clientDoc = await getDoc(clientDocRef);
-            if (clientDoc.exists()) {
-                client = { id: clientDoc.id, ...clientDoc.data() } as Client;
+        if (opp.clientId) {
+             const clientRef = ref(db, `clients/${opp.clientId}`);
+            const clientSnap = await get(clientRef);
+            if (clientSnap.exists()) {
+                client = { id: clientSnap.key, ...clientSnap.val() } as Client;
             }
         }
-        return { id: d.id, ...data, client } as Opportunity;
+        return { ...opp, client } as Opportunity;
     }));
     return opportunities;
 };
 
 export const addOpportunity = async (opportunity: Omit<Opportunity, 'id' | 'client'>) => {
-    const opportunitiesCollection = collection(db, 'opportunities');
-    return await addDoc(opportunitiesCollection, opportunity);
+    const newOppRef = push(ref(db, 'opportunities'));
+    return await set(newOppRef, opportunity);
 };
