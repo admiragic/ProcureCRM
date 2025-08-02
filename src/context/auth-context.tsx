@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { ref, get, set, query, orderByChild, equalTo } from 'firebase/database';
+import { ref, get, set } from 'firebase/database';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase'; 
