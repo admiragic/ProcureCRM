@@ -58,10 +58,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDoc: User = {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
-            name: snapshot?.val()?.name || (firebaseUser.email === 'zoran@temporis.hr' ? 'Zoran Admin' : 'Korisnik'),
+            name: snapshot?.val()?.name || 'Korisnik',
             username: snapshot?.val()?.username || firebaseUser.email || '',
             // Simple logic to assign role based on email.
-            role: firebaseUser.email === 'zoran@temporis.hr' ? 'admin' : 'user',
+            role: snapshot?.val()?.role || 'user',
         };
         setUser(userDoc);
       } else {

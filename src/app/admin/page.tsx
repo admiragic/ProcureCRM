@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { PageHeader } from "@/components/page-header";
 import { UserTable } from "@/components/admin/user-table";
 import { AddUserForm } from "@/components/admin/add-user-form";

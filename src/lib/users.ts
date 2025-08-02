@@ -1,4 +1,3 @@
-
 /**
  * @file Defines the TypeScript type for a User object.
  */
