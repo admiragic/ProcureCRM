@@ -14,7 +14,7 @@ import { auth, db } from '@/lib/firebase';
  * @property {boolean} loading - A boolean indicating if the authentication state is currently being determined.
  * @property {(email: string, pass: string) => Promise<void>} login - Function to log in a user.
  * @property {() => void} logout - Function to log out the current user.
- * @property {(user: User) => Promise<void>} addUser - Function to create a new user account.
+ * @property {(email: string, pass: string, user: Omit<User, 'id' | 'password'>) => Promise<void>} addUser - Function to create a new user account.
  * @property {(user: User) => Promise<void>} updateUser - Function to update a user's data in the database.
  * @property {(userId: string) => Promise<void>} deleteUser - Function to delete a user's account and data.
  */
@@ -23,7 +23,7 @@ type AuthContextType = {
   loading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
-  addUser: (user: User) => Promise<void>;
+  addUser: (email: string, pass: string, user: Omit<User, 'id' | 'password'>) => Promise<void>;
   updateUser: (user: User) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
 };
@@ -93,13 +93,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   /**
    * Creates a new user in Firebase Authentication and adds their details to the Realtime Database.
-   * @param {User} newUser - The user object containing all necessary details including password.
+   * @param {string} email - The user's email for authentication.
+   * @param {string} password - The user's password for authentication.
+   * @param {Omit<User, 'id' | 'password'>} newUser - The user object containing additional details.
    */
-  const addUser = async (newUser: User) => {
-    if (!newUser.password) throw new Error("Password is required for new user");
-    
+  const addUser = async (email: string, password: string, newUser: Omit<User, 'id' | 'password'>) => {
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const uid = userCredential.user.uid;
         
         // Add user details to the Realtime Database under the `users` node.
@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     } catch(error) {
         console.error("Error creating new user:", error);
-        throw error;
+        throw error; // Re-throw the error to be caught by the form
     }
   };
 
@@ -141,16 +141,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   /**
    * Deletes a user from the Realtime Database.
+   * IMPORTANT: This only removes the user from the database, not from Firebase Authentication.
+   * The user will still exist and be able to log in. For full deletion,
+   * a backend function (e.g., Firebase Cloud Function) is required to delete the Auth user.
    * @param {string} userId - The ID of the user to delete.
    */
   const deleteUser = async (userId: string) => {
       try {
-        // This only removes the user's data from the Realtime Database.
-        // Deleting a user from Firebase Auth itself is a privileged operation
-        // and typically should be handled by a secure backend (e.g., a Cloud Function).
         const userRef = ref(db, `users/${userId}`);
         await remove(userRef);
-        console.log(`User ${userId} deleted from Realtime Database.`);
+        console.log(`User ${userId} deleted from Realtime Database. Please delete from Firebase Auth console.`);
     } catch (error) {
         console.error("Error deleting user:", error);
         throw error;
