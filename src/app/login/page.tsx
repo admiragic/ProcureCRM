@@ -9,8 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { useLanguage } from '@/context/language-context';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
@@ -20,7 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, login } = useAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -35,8 +33,7 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
-      // Logic is moved back here from the API route for a standard client-side flow
-      await signInWithEmailAndPassword(auth, email, password);
+      await login(email, password);
       // onAuthStateChanged in AuthProvider will handle setting the user state
       // and the useEffect above will handle redirection.
     } catch (err: any) {

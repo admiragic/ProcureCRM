@@ -7,10 +7,12 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useLanguage } from '@/context/language-context';
 
 export function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -22,15 +24,18 @@ export function AppContent({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Učitavanje...
+        {t('login_page.loading')}
       </div>
     );
   }
 
+  // The login page is part of `children`, we let it render.
+  // The useEffect above will handle redirection if the user is already logged in.
   if (!user) {
     return <>{children}</>;
   }
 
+  // If user is logged in, show the main app layout
   return (
     <SidebarProvider>
       <AppSidebar />

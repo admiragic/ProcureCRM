@@ -4,9 +4,7 @@ import { Inter, Space_Grotesk, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/context/auth-context";
-import { LanguageProvider } from "@/context/language-context";
-import { AppContent } from "@/components/layout/app-content";
+import { Providers } from "@/app/providers";
 
 export const metadata: Metadata = {
   title: "ProcureCRM",
@@ -48,11 +46,9 @@ export default function RootLayout({
           sourceCodePro.variable
         )}
       >
-        <AuthProvider>
-          <LanguageProvider>
-            <AppContent>{children}</AppContent>
-          </LanguageProvider>
-        </AuthProvider>
+        <Providers>
+          {children}
+        </Providers>
         <Toaster />
       </body>
     </html>
