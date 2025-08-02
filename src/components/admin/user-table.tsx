@@ -20,9 +20,17 @@ import { Card } from "@/components/ui/card"
 import type { User } from "@/lib/users"
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/context/language-context"
+import { Button } from "../ui/button"
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 
+interface UserTableProps {
+    data: User[];
+    onEdit: (user: User) => void;
+    onDelete: (user: User) => void;
+}
 
-export function UserTable({ data }: { data: User[] }) {
+export function UserTable({ data, onEdit, onDelete }: UserTableProps) {
     const { t } = useLanguage();
 
     const columns: ColumnDef<User>[] = [
@@ -46,6 +54,32 @@ export function UserTable({ data }: { data: User[] }) {
             return <Badge variant={role === 'admin' ? 'destructive' : 'secondary'} className="capitalize">{role}</Badge>
         },
       },
+      {
+        id: "actions",
+        cell: ({ row }) => {
+            const user = row.original;
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(user)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
+                             <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        }
+      }
     ]
 
   const table = useReactTable({

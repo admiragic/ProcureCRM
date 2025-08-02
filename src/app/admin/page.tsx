@@ -12,11 +12,21 @@ import { Button } from "@/components/ui/button";
 import { Download, Upload, FileText, UserPlus, FileUp, FileDown } from "lucide-react";
 import type { User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
 import { useData } from '@/context/data-context';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EditUserDialog } from '@/components/admin/edit-user-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 // Helper function to convert array of objects to CSV
 const convertToCSV = <T extends object>(data: T[], headerOnly = false): string => {
@@ -53,19 +63,44 @@ const downloadCSV = (csvString: string, filename: string) => {
 
 
 export default function AdminPage() {
-  const { getUsers } = useAuth();
+  const { getUsers, users, setUsers, deleteUser } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
   const { clients, interactions, opportunities, tasks, loading } = useData();
-  const [users, setUsers] = useState<User[]>([]);
+
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-        const userList = await getUsers();
-        setUsers(userList);
-    };
-    fetchUsers();
+    getUsers();
   }, [getUsers]);
+
+  const handleEditUser = (user: User) => {
+    setUserToEdit(user);
+    setIsEditUserDialogOpen(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+        await deleteUser(userToDelete.id);
+        setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+        toast({
+            title: "User Deleted",
+            description: `User ${userToDelete.name} has been deleted.`,
+        });
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "Failed to delete user.",
+            variant: "destructive",
+        });
+    } finally {
+        setUserToDelete(null);
+    }
+  };
 
   if (loading) {
     return <div>{t('login_page.loading')}</div>
@@ -154,10 +189,14 @@ export default function AdminPage() {
     <>
       <PageHeader
         title={t('admin_page.title')}
-        description={t('admin_page.description')}
+        description="Upravljajte korisnicima i postavkama sustava."
       />
       <div className="space-y-8">
-        <UserTable data={users} />
+        <UserTable 
+            data={users}
+            onEdit={handleEditUser}
+            onDelete={(user) => setUserToDelete(user)}
+        />
         
         <Tabs defaultValue="add-user">
           <TabsList className="grid w-full grid-cols-3 max-w-lg">
@@ -176,7 +215,7 @@ export default function AdminPage() {
           </TabsList>
           
           <TabsContent value="add-user" className="mt-6">
-            <AddUserForm />
+            <AddUserForm onUserAdded={(newUser) => setUsers(prev => [...prev, newUser])} />
           </TabsContent>
           
           <TabsContent value="export" className="mt-6">
@@ -243,6 +282,33 @@ export default function AdminPage() {
           </TabsContent>
         </Tabs>
       </div>
+      {userToEdit && (
+        <EditUserDialog
+            isOpen={isEditUserDialogOpen}
+            setIsOpen={setIsEditUserDialogOpen}
+            user={userToEdit}
+            onUserUpdated={(updatedUser) => {
+                setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+                setUserToEdit(null);
+            }}
+        />
+      )}
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the user account
+                for {userToDelete?.name} and remove their data from our servers.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </>
   );
 }
