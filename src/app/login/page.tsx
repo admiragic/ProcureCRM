@@ -38,7 +38,7 @@ export default function LoginPage() {
       // and the useEffect above will handle redirection.
     } catch (err: any) {
       console.error("Login failed:", err);
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setError(t('login_page.error_invalid_credentials'));
       } else if (err.code === 'auth/configuration-not-found') {
         setError(t('login_page.error_config_problem'));

@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const seedAdminUser = useCallback(async () => {
-    const adminEmail = 'admin@procurecrm.com';
+    const adminEmail = 'zoran@temporis.hr';
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where("email", "==", adminEmail));
     
@@ -58,13 +58,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (querySnapshot.empty) {
         console.log("Admin user not found, creating one...");
         try {
-            const adminPassword = 'adminpassword123'; // Use a secure, generated password in a real app
+            const adminPassword = 'shaban$$'; // Use a secure, generated password in a real app
             const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
             const uid = userCredential.user.uid;
 
             await setDoc(doc(db, 'users', uid), {
-                username: 'admin',
-                name: 'Administrator',
+                username: 'zoran',
+                name: 'Zoran Admin',
                 email: adminEmail,
                 role: 'admin',
             });
@@ -73,6 +73,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // It's possible the user exists in Auth but not in Firestore, or password is not strong enough
             if (error.code !== 'auth/email-already-in-use') {
                  console.error("Error creating admin user:", error);
+            } else {
+                console.log("Admin user already exists in Auth.");
             }
         }
     } else {
