@@ -5,13 +5,12 @@ import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  "projectId": "procurecrm",
-  "appId": "1:289531756755:web:6eed801e73589d4fd11426",
-  "storageBucket": "procurecrm.firebasestorage.app",
-  "apiKey": "AIzaSyAnAHY6pg-cHWCIkOipc_qKeZUYuYsuzQk",
-  "authDomain": "procurecrm.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "289531756755"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
