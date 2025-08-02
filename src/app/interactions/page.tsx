@@ -11,7 +11,11 @@ import { useData } from "@/context/data-context";
 
 export default function InteractionsPage() {
   const { t } = useLanguage();
-  const { interactions } = useData();
+  const { interactions, loading } = useData();
+
+  if (loading) {
+    return <div>{t('login_page.loading')}</div>
+  }
 
   return (
     <>

@@ -39,7 +39,11 @@ const stageColor: Record<Opportunity['stage'], string> = {
 
 export default function OpportunitiesPage() {
     const { t } = useLanguage();
-    const { opportunities } = useData();
+    const { opportunities, loading } = useData();
+
+    if (loading) {
+        return <div>{t('login_page.loading')}</div>
+    }
 
     const handleDelete = (id: string) => {
         alert(`Deleting opportunity ${id}`);

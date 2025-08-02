@@ -7,9 +7,15 @@ import { PlusCircle } from "lucide-react";
 import { ClientTable } from "@/components/client-table";
 import Link from "next/link";
 import { useData } from "@/context/data-context";
+import { useLanguage } from "@/context/language-context";
 
 export default function ClientsPage() {
-  const { clients } = useData();
+  const { clients, loading } = useData();
+  const { t } = useLanguage();
+
+  if (loading) {
+    return <div>{t('login_page.loading')}</div>
+  }
 
   return (
     <>

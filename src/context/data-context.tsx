@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
 import { get, ref, onValue, off } from 'firebase/database';
 import { db } from '@/lib/firebase';
@@ -137,11 +137,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  // The refreshData function is no longer needed as data is now real-time
-  const refreshData = () => {};
-
   return (
-    <DataContext.Provider value={{ clients, interactions, opportunities, tasks, setTasks, loading, refreshData }}>
+    <DataContext.Provider value={{ clients, interactions, opportunities, tasks, setTasks, loading }}>
       {children}
     </DataContext.Provider>
   );

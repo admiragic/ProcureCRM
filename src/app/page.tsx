@@ -32,8 +32,12 @@ import { useLanguage } from "@/context/language-context";
 
 export default function DashboardPage() {
   const { t } = useLanguage();
-  const { clients, opportunities, tasks, interactions } = useData();
+  const { clients, opportunities, tasks, interactions, loading } = useData();
   
+  if (loading) {
+    return <div>{t('login_page.loading')}</div>
+  }
+
   const totalClients = clients.length;
   const activeDeals = opportunities.filter(o => o.stage !== 'won' && o.stage !== 'lost').length;
   const totalRevenue = opportunities.filter(o => o.stage === 'won').reduce((sum, o) => sum + o.value, 0);

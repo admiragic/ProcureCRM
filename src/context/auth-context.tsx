@@ -55,29 +55,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Determine role based on email, avoiding a fetch right after auth state change
-        const isKnownAdmin = firebaseUser.email === 'zoran@temporis.hr';
-        const userRole = isKnownAdmin ? 'admin' : 'user';
-
-        // Fetch user data from DB to get name, but do it safely
         const userRef = ref(db, `users/${firebaseUser.uid}`);
-        const snapshot = await get(userRef).catch(e => {
-            // This might fail if rules are not set up, but we can proceed
-            console.warn("Could not fetch user data post-login, probably due to security rules. Using defaults.", e.message);
-            return null;
-        });
+        const snapshot = await get(userRef).catch(() => null); // Catch potential permission errors
 
-        const dbName = snapshot?.val()?.name;
-        
         const userDoc: User = {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
-            name: dbName || firebaseUser.displayName || (isKnownAdmin ? 'Zoran Admin' : 'Korisnik'),
+            name: snapshot?.val()?.name || firebaseUser.displayName || (firebaseUser.email === 'zoran@temporis.hr' ? 'Zoran Admin' : 'Korisnik'),
             username: snapshot?.val()?.username || firebaseUser.email || '',
-            role: userRole,
+            role: firebaseUser.email === 'zoran@temporis.hr' ? 'admin' : 'user',
         };
         setUser(userDoc);
-
       } else {
         setUser(null);
       }
