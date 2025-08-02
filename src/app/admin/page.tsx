@@ -9,13 +9,14 @@ import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileText } from "lucide-react";
+import { Download, Upload, FileText, UserPlus, FileUp, FileDown } from "lucide-react";
 import type { User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
 import { useData } from '@/context/data-context';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Helper function to convert array of objects to CSV
 const convertToCSV = <T extends object>(data: T[], headerOnly = false): string => {
@@ -155,70 +156,92 @@ export default function AdminPage() {
         title={t('admin_page.title')}
         description={t('admin_page.description')}
       />
-      <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-8">
-            <UserTable data={users} />
-            <div className="grid md:grid-cols-2 gap-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Export Data</CardTitle>
-                        <CardDescription>Download all application data as CSV files.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid sm:grid-cols-2 gap-4">
-                        <Button onClick={() => handleExport('clients')}>
-                            <Download className="mr-2" />
-                            Export Clients
-                        </Button>
-                        <Button onClick={() => handleExport('opportunities')}>
-                            <Download className="mr-2" />
-                            Export Opportunities
-                        </Button>
-                        <Button onClick={() => handleExport('interactions')}>
-                            <Download className="mr-2" />
-                            Export Interactions
-                        </Button>
-                        <Button onClick={() => handleExport('tasks')}>
-                            <Download className="mr-2" />
-                            Export Tasks
-                        </Button>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Import Data</CardTitle>
-                        <CardDescription>Upload CSV files to add data to the application.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-medium">Download Templates</h4>
-                             <div className="grid sm:grid-cols-2 gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('clients')}>
-                                    <FileText className="mr-2" /> Clients
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('opportunities')}>
-                                    <FileText className="mr-2" /> Opportunities
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('interactions')}>
-                                    <FileText className="mr-2" /> Interactions
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('tasks')}>
-                                    <FileText className="mr-2" /> Tasks
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="csv-upload" className="text-sm font-medium">Upload File</Label>
-                            <div className="flex gap-2">
-                                <Input id="csv-upload" type="file" accept=".csv" onChange={handleFileUpload} className="cursor-pointer" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-        <div>
+      <div className="space-y-8">
+        <UserTable data={users} />
+        
+        <Tabs defaultValue="add-user">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+            <TabsTrigger value="add-user">
+              <UserPlus className="mr-2" />
+              {t('admin_page.form_title')}
+            </TabsTrigger>
+            <TabsTrigger value="export">
+              <FileDown className="mr-2" />
+              Export Data
+            </TabsTrigger>
+            <TabsTrigger value="import">
+              <FileUp className="mr-2" />
+              Import Data
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="add-user" className="mt-6">
             <AddUserForm />
-        </div>
+          </TabsContent>
+          
+          <TabsContent value="export" className="mt-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Export Data</CardTitle>
+                    <CardDescription>Download all application data as CSV files.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Button onClick={() => handleExport('clients')}>
+                        <Download className="mr-2" />
+                        Export Clients
+                    </Button>
+                    <Button onClick={() => handleExport('opportunities')}>
+                        <Download className="mr-2" />
+                        Export Opportunities
+                    </Button>
+                    <Button onClick={() => handleExport('interactions')}>
+                        <Download className="mr-2" />
+                        Export Interactions
+                    </Button>
+                    <Button onClick={() => handleExport('tasks')}>
+                        <Download className="mr-2" />
+                        Export Tasks
+                    </Button>
+                </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="import" className="mt-6">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Import Data</CardTitle>
+                    <CardDescription>Upload CSV files to add data to the application.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-medium">1. Download Template</h4>
+                        <p className="text-sm text-muted-foreground">Start by downloading a template to ensure your data is in the correct format.</p>
+                         <div className="grid sm:grid-cols-2 gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('clients')}>
+                                <FileText className="mr-2" /> Clients
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('opportunities')}>
+                                <FileText className="mr-2" /> Opportunities
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('interactions')}>
+                                <FileText className="mr-2" /> Interactions
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDownloadTemplate('tasks')}>
+                                <FileText className="mr-2" /> Tasks
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-medium">2. Upload File</h4>
+                        <p className="text-sm text-muted-foreground">Once you've filled out the template, upload the CSV file here.</p>
+                        <div className="flex gap-2">
+                            <Input id="csv-upload" type="file" accept=".csv" onChange={handleFileUpload} className="cursor-pointer" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );
