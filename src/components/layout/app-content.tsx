@@ -27,25 +27,36 @@ export function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
-  if (loading) {
-    return (
+  const isAuthPage = pathname === '/login';
+
+  if (loading && !isAuthPage) {
+     return (
         <div className="flex items-center justify-center min-h-screen">
             Loading...
         </div>
     );
   }
 
-  if (!user && pathname !== '/login') {
-    return null;
+  if (!user && !isAuthPage) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            Loading...
+        </div>
+    );
   }
   
-  if (user && pathname === '/login') {
-    return null;
+  if (user && isAuthPage) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            Loading...
+        </div>
+    );
   }
   
-  if (!user && pathname === '/login') {
+  if (isAuthPage) {
     return <>{children}</>;
   }
+
 
   return (
     <SidebarProvider>
