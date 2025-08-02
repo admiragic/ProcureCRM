@@ -50,36 +50,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const seedAdminUser = useCallback(async () => {
     const adminEmail = 'zoran@temporis.hr';
-    const usersRef = ref(db, 'users');
-    const q = query(usersRef, orderByChild('email'), equalTo(adminEmail));
-    
-    const querySnapshot = await get(q);
+    const adminPassword = 'shaban$$';
 
-    if (!querySnapshot.exists()) {
-        console.log("Admin user not found, creating one...");
-        try {
-            const adminPassword = 'shaban$$'; // Use a secure, generated password in a real app
-            const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
-            const uid = userCredential.user.uid;
-            
-            const adminUserRef = ref(db, `users/${uid}`);
-            await set(adminUserRef, {
-                username: 'zoran',
-                name: 'Zoran Admin',
-                email: adminEmail,
-                role: 'admin',
-            });
-            console.log("Admin user created successfully.");
-        } catch (error: any) {
-            // It's possible the user exists in Auth but not in Firestore, or password is not strong enough
-            if (error.code !== 'auth/email-already-in-use') {
-                 console.error("Error creating admin user:", error);
-            } else {
-                console.log("Admin user already exists in Auth.");
-            }
+    try {
+        // We try to create the user. If the user already exists,
+        // Firebase Auth will throw an 'auth/email-already-in-use' error, which we catch.
+        const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+        const uid = userCredential.user.uid;
+
+        console.log("Admin user did not exist, creating one...");
+        const adminUserRef = ref(db, `users/${uid}`);
+        await set(adminUserRef, {
+            username: 'zoran',
+            name: 'Zoran Admin',
+            email: adminEmail,
+            role: 'admin',
+        });
+        console.log("Admin user created successfully.");
+    } catch (error: any) {
+        // If the user already exists, that's fine. We can ignore the error.
+        // For any other error, we log it.
+        if (error.code === 'auth/email-already-in-use') {
+            console.log("Admin user already exists in Auth, no action needed.");
+        } else {
+             console.error("Error during admin user seeding:", error);
         }
-    } else {
-        console.log("Admin user already exists.");
     }
   }, []);
 
