@@ -11,7 +11,7 @@ import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('admin@procurerm.com');
+  const [email, setEmail] = useState('zoran@temporis.hr');
   const [password, setPassword] = useState('shaban$$');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -44,7 +44,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@procurerm.com"
+                placeholder="zoran@temporis.hr"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
