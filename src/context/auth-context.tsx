@@ -55,27 +55,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch user role from the database
-        const userRef = ref(db, `users/${firebaseUser.uid}`);
-        const snapshot = await get(userRef);
+        // Determine role based on email, avoiding a fetch right after auth state change
+        const isKnownAdmin = firebaseUser.email === 'zoran@temporis.hr';
+        const userRole = isKnownAdmin ? 'admin' : 'user';
 
-        let userRole = 'user'; // Default role
-        if (snapshot.exists()) {
-            const userData = snapshot.val();
-            userRole = userData.role || 'user';
-        } else if (firebaseUser.email === 'zoran@temporis.hr') {
-            // This is a fallback in case the DB entry hasn't been written yet for the admin
-            userRole = 'admin';
-        }
+        // Fetch user data from DB to get name, but do it safely
+        const userRef = ref(db, `users/${firebaseUser.uid}`);
+        const snapshot = await get(userRef).catch(e => {
+            // This might fail if rules are not set up, but we can proceed
+            console.warn("Could not fetch user data post-login, probably due to security rules. Using defaults.", e.message);
+            return null;
+        });
+
+        const dbName = snapshot?.val()?.name;
         
         const userDoc: User = {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
-            name: firebaseUser.displayName || snapshot.val()?.name || (userRole === 'admin' ? 'Zoran Admin' : 'Korisnik'),
-            username: firebaseUser.email || '',
-            role: userRole as 'admin' | 'user',
+            name: dbName || firebaseUser.displayName || (isKnownAdmin ? 'Zoran Admin' : 'Korisnik'),
+            username: snapshot?.val()?.username || firebaseUser.email || '',
+            role: userRole,
         };
         setUser(userDoc);
+
       } else {
         setUser(null);
       }
