@@ -1,3 +1,4 @@
+
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getDatabase, type Database } from 'firebase/database';
 import { getAuth, type Auth } from 'firebase/auth';
@@ -10,7 +11,7 @@ const firebaseConfig = {
   storageBucket: "procurecrm.appspot.com",
   messagingSenderId: "289531756755",
   appId: "1:289531756755:web:6eed801e73589d4fd11426",
-  databaseURL: "https://procurecrm-default-rtdb.firebaseio.com"
+  databaseURL: "https://procurecrm-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
 // Initialize Firebase
