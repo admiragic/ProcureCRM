@@ -29,8 +29,6 @@ const fetchUserDocument = async (firebaseUser: FirebaseUser): Promise<User | nul
             return { id: userDoc.id, ...userDoc.data() } as User;
         }
         console.warn("No user document found for uid:", firebaseUser.uid);
-        // This might happen if user is created in Auth but not in Firestore.
-        // For now, we return a basic user object.
         return {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
