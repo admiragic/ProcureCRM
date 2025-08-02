@@ -11,6 +11,8 @@ import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useLanguage } from '@/context/language-context';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('zoran@temporis.hr');
@@ -18,6 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Redirect if user is already logged in
@@ -36,11 +39,11 @@ export default function LoginPage() {
       // and the useEffect above will handle redirection.
     } catch (err: any) {
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-email') {
-        setError('Neispravan email ili lozinka.');
+        setError(t('login_page.error_invalid_credentials'));
       } else if (err.code === 'auth/configuration-not-found') {
-        setError('Problem s konfiguracijom Firebasea. Molimo provjerite `src/lib/firebase.ts`.');
+        setError(t('login_page.error_config_problem'));
       } else {
-        setError('Došlo je do pogreške prilikom prijave.');
+        setError(t('login_page.error_generic'));
       }
       console.error(err);
     }
@@ -50,7 +53,7 @@ export default function LoginPage() {
   if (loading || user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
-            Učitavanje...
+            {t('login_page.loading')}
         </div>
     );
   }
@@ -60,15 +63,15 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-            <Logo />
+              <Logo />
             </div>
-          <CardTitle className="text-2xl">Prijava</CardTitle>
-          <CardDescription>Unesite svoj email i lozinku za pristup.</CardDescription>
+          <CardTitle className="text-2xl">{t('login_page.title')}</CardTitle>
+          <CardDescription>{t('login_page.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('login_page.email_label')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -79,7 +82,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Lozinka</Label>
+              <Label htmlFor="password">{t('login_page.password_label')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -90,8 +93,11 @@ export default function LoginPage() {
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
             <Button onClick={handleLogin} className="w-full">
-              Prijavi se
+              {t('login_page.login_button')}
             </Button>
+            <div className="mt-4 flex justify-center">
+                <LanguageSwitcher />
+            </div>
           </div>
         </CardContent>
       </Card>

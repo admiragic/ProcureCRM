@@ -231,5 +231,16 @@
         "form_save_button": "Dodaj korisnika",
         "toast_success_title": "Korisnik dodan",
         "toast_success_description": "Korisnik {{name}} je uspješno dodan."
+    },
+    "login_page": {
+        "title": "Prijava",
+        "description": "Unesite svoj email i lozinku za pristup.",
+        "email_label": "Email",
+        "password_label": "Lozinka",
+        "login_button": "Prijavi se",
+        "loading": "Učitavanje...",
+        "error_invalid_credentials": "Neispravan email ili lozinka.",
+        "error_config_problem": "Problem s konfiguracijom Firebasea. Molimo provjerite `src/lib/firebase.ts`.",
+        "error_generic": "Došlo je do pogreške prilikom prijave."
     }
 }

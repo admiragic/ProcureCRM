@@ -231,5 +231,16 @@
         "form_save_button": "Add User",
         "toast_success_title": "User Added",
         "toast_success_description": "The user {{name}} has been successfully added."
+    },
+    "login_page": {
+        "title": "Login",
+        "description": "Enter your email and password to access your account.",
+        "email_label": "Email",
+        "password_label": "Password",
+        "login_button": "Login",
+        "loading": "Loading...",
+        "error_invalid_credentials": "Invalid email or password.",
+        "error_config_problem": "Firebase configuration problem. Please check `src/lib/firebase.ts`.",
+        "error_generic": "An error occurred during login."
     }
 }
