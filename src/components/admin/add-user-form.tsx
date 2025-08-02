@@ -53,16 +53,32 @@ export function AddUserForm() {
     },
   });
 
-  function onSubmit(values: UserFormValues) {
-    addUser({
-        ...values,
-        id: '' // ID will be generated in auth context
-    });
-    toast({
-        title: t('admin_page.toast_success_title'),
-        description: t('admin_page.toast_success_description', { name: values.name }),
-    });
-    form.reset();
+  async function onSubmit(values: UserFormValues) {
+    try {
+      await addUser({
+          ...values,
+          id: '' // ID will be generated in auth context
+      });
+      toast({
+          title: t('admin_page.toast_success_title'),
+          description: t('admin_page.toast_success_description', { name: values.name }),
+      });
+      form.reset();
+    } catch (error: any) {
+        if (error.code === 'auth/email-already-in-use') {
+            toast({
+                title: "Error: Email already in use",
+                description: "This email address is already registered. Please use a different one.",
+                variant: "destructive"
+            });
+        } else {
+             toast({
+                title: "Error",
+                description: "An unexpected error occurred while adding the user.",
+                variant: "destructive"
+            });
+        }
+    }
   }
 
   return (
@@ -161,4 +177,3 @@ export function AddUserForm() {
     </Card>
   );
 }
-
