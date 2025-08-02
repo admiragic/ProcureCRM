@@ -12,6 +12,13 @@ export function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -21,11 +28,9 @@ export function AppContent({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    // Ako korisnik nije prijavljen, prikazujemo samo djecu (npr. stranicu za prijavu)
     return <>{children}</>;
   }
 
-  // Ako je korisnik prijavljen, prikazujemo puni izgled aplikacije
   return (
     <SidebarProvider>
       <AppSidebar />

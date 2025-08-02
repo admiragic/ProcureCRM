@@ -30,7 +30,7 @@ export default function LoginPage() {
       await login(email, password);
       // Učinak useEffect će se pobrinuti za preusmjeravanje
     } catch (err: any) {
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-email') {
         setError('Neispravan email ili lozinka.');
       } else {
         setError('Došlo je do pogreške prilikom prijave.');
