@@ -41,11 +41,9 @@ export default function DashboardPage() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       const [clientsData, opportunitiesData, tasksData, interactionsData] = await Promise.all([
         getClients(),
         getOpportunities(),
@@ -56,7 +54,6 @@ export default function DashboardPage() {
       setOpportunities(opportunitiesData);
       setTasks(tasksData);
       setInteractions(interactionsData);
-      setLoading(false);
     };
     fetchData();
   }, []);
@@ -84,8 +81,6 @@ export default function DashboardPage() {
     },
   };
   
-  if (loading) return <div>Loading...</div>;
-
   return (
     <>
       <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />

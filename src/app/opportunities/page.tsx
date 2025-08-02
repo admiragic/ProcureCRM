@@ -41,14 +41,11 @@ const stageColor: Record<Opportunity['stage'], string> = {
 export default function OpportunitiesPage() {
     const { t } = useLanguage();
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
       const fetchOpportunities = async () => {
-        setLoading(true);
         const opportunitiesData = await getOpportunities();
         setOpportunities(opportunitiesData);
-        setLoading(false);
       }
       fetchOpportunities();
     }, []);
@@ -57,8 +54,6 @@ export default function OpportunitiesPage() {
         alert(`Deleting opportunity ${id}`);
         // Here you would typically call an API to delete the opportunity
     };
-
-    if (loading) return <div>Loading...</div>;
 
     return (
         <>

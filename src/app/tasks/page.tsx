@@ -29,15 +29,12 @@ const statusColors: Record<Task['status'], string> = {
 export default function TasksPage() {
     const { t } = useLanguage();
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | Task['status']>('all');
 
     useEffect(() => {
         const fetchTasks = async () => {
-            setLoading(true);
             const tasksData = await getTasks();
             setTasks(tasksData);
-            setLoading(false);
         }
         fetchTasks();
     }, []);
@@ -66,8 +63,6 @@ export default function TasksPage() {
     const totalHours = useMemo(() => {
         return filteredTasks.reduce((acc, task) => acc + task.timeEstimate, 0);
     }, [filteredTasks]);
-
-    if (loading) return <div>Loading...</div>;
 
   return (
     <>

@@ -12,19 +12,14 @@ import type { Client } from '@/lib/types';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchClients = async () => {
-      setLoading(true);
       const clientsData = await getClients();
       setClients(clientsData);
-      setLoading(false);
     }
     fetchClients();
   }, []);
-
-  if (loading) return <div>Loading...</div>;
 
   return (
     <>

@@ -14,19 +14,14 @@ import type { Interaction } from "@/lib/types";
 export default function InteractionsPage() {
   const { t } = useLanguage();
   const [interactions, setInteractions] = useState<Interaction[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchInteractions = async () => {
-      setLoading(true);
       const interactionsData = await getInteractions();
       setInteractions(interactionsData);
-      setLoading(false);
     };
     fetchInteractions();
   }, []);
-
-  if (loading) return <div>Loading...</div>;
 
   return (
     <>

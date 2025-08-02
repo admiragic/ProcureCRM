@@ -11,6 +11,7 @@ import { auth, db } from '@/lib/firebase';
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  isInitialized: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   addUser: (user: User) => Promise<void>;
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
 
   const seedAdminUser = useCallback(async () => {
@@ -53,16 +55,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     seedAdminUser();
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
-        // WORKAROUND: Instead of fetching from DB (which causes permission errors on first load),
-        // we construct a user object from the auth state.
-        // We'll assign the role based on the email for the admin user.
         const isKnownAdmin = firebaseUser.email === 'zoran@temporis.hr';
         const userDoc: User = {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
-            name: firebaseUser.displayName || 'Korisnik',
+            name: firebaseUser.displayName || (isKnownAdmin ? 'Zoran Admin' : 'Korisnik'),
             username: firebaseUser.email || '',
             role: isKnownAdmin ? 'admin' : 'user'
         };
@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
       setLoading(false);
+      setIsInitialized(true);
     });
 
     return () => unsubscribe();
@@ -117,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers }}>
+    <AuthContext.Provider value={{ user, loading, isInitialized, login, logout, addUser, getUsers }}>
       {children}
     </AuthContext.Provider>
   );
