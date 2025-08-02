@@ -13,19 +13,12 @@ const firebaseConfig = {
   appId: "1:289531756755:web:6eed801e73589d4fd11426",
 };
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
-let storage: FirebaseStorage;
 
-try {
-  app = getApp();
-} catch (e) {
-  app = initializeApp(firebaseConfig);
-}
+// Initialize Firebase
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-auth = getAuth(app);
-db = getFirestore(app);
-storage = getStorage(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
 export { app, db, auth, storage };

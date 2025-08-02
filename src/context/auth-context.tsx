@@ -6,6 +6,8 @@ import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, User as FirebaseUser } from 'firebase/auth';
 import { doc, setDoc, getDoc, getDocs, collection } from 'firebase/firestore';
 import type { User } from '@/lib/users';
+import { useRouter } from 'next/navigation';
+
 
 type AuthContextType = {
   user: User | null;
@@ -27,7 +29,15 @@ const fetchUserDocument = async (firebaseUser: FirebaseUser): Promise<User | nul
             return { id: userDoc.id, ...userDoc.data() } as User;
         }
         console.warn("No user document found for uid:", firebaseUser.uid);
-        return null;
+        // This might happen if user is created in Auth but not in Firestore.
+        // For now, we return a basic user object.
+        return {
+            id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            name: firebaseUser.displayName || 'Unnamed User',
+            role: 'user',
+            username: firebaseUser.email || ''
+        };
     } catch (error) {
         console.error("Error fetching user document:", error);
         return null;
@@ -37,6 +47,7 @@ const fetchUserDocument = async (firebaseUser: FirebaseUser): Promise<User | nul
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -54,12 +65,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, pass: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    // onAuthStateChanged će se automatski pokrenuti i postaviti korisnika
+    const userData = await fetchUserDocument(userCredential.user);
+    setUser(userData);
+    router.push('/');
   };
 
   const logout = async () => {
     await signOut(auth);
-    // onAuthStateChanged će se automatski pokrenuti i postaviti korisnika na null
+    setUser(null);
+    router.push('/login');
   };
 
   const addUser = async (newUser: User) => {
