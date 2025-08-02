@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
@@ -12,9 +12,14 @@ export function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (loading || !isClient) return;
 
     const isAuthPage = pathname === '/login';
 
@@ -25,38 +30,25 @@ export function AppContent({ children }: { children: React.ReactNode }) {
     if (user && isAuthPage) {
       router.push('/');
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, pathname, router, isClient]);
+  
+  if (!isClient || loading) {
+    return (
+       <div className="flex items-center justify-center min-h-screen">
+           Loading...
+       </div>
+   );
+  }
 
   const isAuthPage = pathname === '/login';
-
-  if (loading && !isAuthPage) {
-     return (
-        <div className="flex items-center justify-center min-h-screen">
-            Loading...
-        </div>
-    );
-  }
-
-  if (!user && !isAuthPage) {
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-            Loading...
-        </div>
-    );
-  }
-  
-  if (user && isAuthPage) {
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-            Loading...
-        </div>
-    );
-  }
   
   if (isAuthPage) {
-    return <>{children}</>;
+    return <>{user ? null : children}</>;
   }
 
+  if (!user) {
+    return null;
+  }
 
   return (
     <SidebarProvider>
