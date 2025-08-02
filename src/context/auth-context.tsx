@@ -24,35 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const seedAdminUser = useCallback(async () => {
-    const adminEmail = 'zoran@temporis.hr';
-    const adminPassword = 'shaban$$';
-
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
-        const uid = userCredential.user.uid;
-
-        console.log("Admin user did not exist, creating one...");
-        const adminUserRef = ref(db, `users/${uid}`);
-        await set(adminUserRef, {
-            username: 'zoran',
-            name: 'Zoran Admin',
-            email: adminEmail,
-            role: 'admin',
-        });
-        console.log("Admin user created successfully.");
-    } catch (error: any) {
-        if (error.code === 'auth/email-already-in-use') {
-            console.log("Admin user already exists in Auth, no action needed.");
-        } else {
-             console.error("Error during admin user seeding:", error);
-        }
-    }
-  }, []);
-
   useEffect(() => {
-    seedAdminUser();
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userRef = ref(db, `users/${firebaseUser.uid}`);
@@ -73,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [seedAdminUser]);
+  }, []);
   
   const login = async (email: string, pass: string) => {
     await signInWithEmailAndPassword(auth, email, pass);

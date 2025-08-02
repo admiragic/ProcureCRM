@@ -13,8 +13,8 @@ import { useLanguage } from '@/context/language-context';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('zoran@temporis.hr');
-  const [password, setPassword] = useState('shaban$$');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setIsLoading] = useState(false);
   const router = useRouter();
