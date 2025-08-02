@@ -1,7 +1,8 @@
 
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
@@ -9,23 +10,41 @@ import { AppHeader } from '@/components/layout/app-header';
 
 export function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, loading } = useAuth();
 
-  if (!user) {
-    if (pathname !== '/login') {
-        if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-        }
-        return null; 
+  useEffect(() => {
+    if (loading) return;
+
+    const isAuthPage = pathname === '/login';
+
+    if (!user && !isAuthPage) {
+      router.push('/login');
     }
-    return <>{children}</>;
+
+    if (user && isAuthPage) {
+      router.push('/');
+    }
+  }, [user, loading, pathname, router]);
+
+  if (loading) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            Loading...
+        </div>
+    );
   }
 
-  if (pathname === '/login') {
-    if (typeof window !== 'undefined') {
-        window.location.href = '/';
-    }
+  if (!user && pathname !== '/login') {
     return null;
+  }
+  
+  if (user && pathname === '/login') {
+    return null;
+  }
+  
+  if (!user && pathname === '/login') {
+    return <>{children}</>;
   }
 
   return (

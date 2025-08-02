@@ -19,11 +19,18 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const fetchUserDocument = async (firebaseUser: FirebaseUser): Promise<User | null> => {
-    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-    if (userDoc.exists()) {
-        return { id: userDoc.id, ...userDoc.data() } as User;
+    if (!firebaseUser) return null;
+    try {
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (userDoc.exists()) {
+            return { id: userDoc.id, ...userDoc.data() } as User;
+        }
+        console.warn("No user document found for uid:", firebaseUser.uid);
+        return null;
+    } catch (error) {
+        console.error("Error fetching user document:", error);
+        return null;
     }
-    return null;
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -46,8 +53,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, pass: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    if(userCredential.user) {
-        const userData = await fetchUserDocument(userCredential.user);
+    const firebaseUser = userCredential.user;
+    if (firebaseUser) {
+        const userData = await fetchUserDocument(firebaseUser);
         setUser(userData);
     }
   };
@@ -55,7 +63,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await signOut(auth);
     setUser(null);
-    window.location.href = '/login';
   };
 
   const addUser = async (newUser: User) => {
@@ -77,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
