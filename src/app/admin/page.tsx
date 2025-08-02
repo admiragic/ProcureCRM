@@ -10,26 +10,26 @@ import { useLanguage } from "@/context/language-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, FileText } from "lucide-react";
-import { getClients } from '@/services/clientService';
-import { getInteractions } from '@/services/interactionService';
-import { getOpportunities } from '@/services/opportunityService';
-import { getTasks } from '@/services/taskService';
 import type { Client, Interaction, Opportunity, Task, User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
+import { useData } from '@/context/data-context';
 
 // Helper function to convert array of objects to CSV
 const convertToCSV = <T extends object>(data: T[], headerOnly = false): string => {
     if (data.length === 0) return '';
     
-    const header = Object.keys(data[0]);
+    // Filter out complex objects for CSV header
+    const simpleObject = data[0];
+    const header = Object.keys(simpleObject).filter(key => typeof (simpleObject as any)[key] !== 'object');
+
     if (headerOnly) {
         return header.join(',');
     }
     
-    const replacer = (key: string, value: any) => value === null || value === undefined ? '' : (typeof value === 'object' ? JSON.stringify(value) : value)
+    const replacer = (key: string, value: any) => value === null || value === undefined ? '' : value
     let csv = data.map(row => header.map(fieldName => JSON.stringify((row as any)[fieldName], replacer)).join(','));
     csv.unshift(header.join(','));
     return csv.join('\r\n');
@@ -55,6 +55,7 @@ export default function AdminPage() {
   const { getUsers } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { clients, interactions, opportunities, tasks, loading } = useData();
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -65,22 +66,22 @@ export default function AdminPage() {
     fetchUsers();
   }, [getUsers]);
 
-  const handleExport = async (dataType: 'clients' | 'interactions' | 'opportunities' | 'tasks') => {
+  const handleExport = (dataType: 'clients' | 'interactions' | 'opportunities' | 'tasks') => {
     let data: any[] = [];
     let filename = `${dataType}.csv`;
 
     switch (dataType) {
         case 'clients':
-            data = await getClients();
+            data = clients;
             break;
         case 'interactions':
-            data = await getInteractions();
+            data = interactions;
             break;
         case 'opportunities':
-            data = await getOpportunities();
+            data = opportunities;
             break;
         case 'tasks':
-            data = await getTasks();
+            data = tasks;
             break;
     }
 

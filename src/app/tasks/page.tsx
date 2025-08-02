@@ -3,15 +3,16 @@
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { getTasks, updateTaskStatus, deleteTask } from "@/services/taskService";
+import { updateTaskStatus, deleteTask } from "@/services/taskService";
 import { cn } from "@/lib/utils";
 import { PlusCircle, Clock, MoreVertical, Calendar, CircleHelp, Circle, CheckCircle } from "lucide-react";
 import { format, isPast, isToday, parseISO } from "date-fns";
 import Link from "next/link";
 import { useLanguage } from "@/context/language-context";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import type { Task } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useData } from "@/context/data-context";
 
 const statusIcons: Record<Task['status'], React.ElementType> = {
     planned: CircleHelp,
@@ -28,16 +29,8 @@ const statusColors: Record<Task['status'], string> = {
 
 export default function TasksPage() {
     const { t } = useLanguage();
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const { tasks, setTasks } = useData();
     const [filter, setFilter] = useState<'all' | Task['status']>('all');
-
-    useEffect(() => {
-        const fetchTasks = async () => {
-            const tasksData = await getTasks();
-            setTasks(tasksData);
-        }
-        fetchTasks();
-    }, []);
 
     const handleTaskCompletion = async (taskId: string, currentStatus: Task['status']) => {
         const newStatus = currentStatus === 'closed' ? 'open' : 'closed';

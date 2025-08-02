@@ -1,12 +1,10 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { getOpportunities } from '@/services/opportunityService';
 import { PlusCircle, MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,6 +17,7 @@ import { format, parseISO } from "date-fns";
 import type { Opportunity } from "@/lib/types";
 import Link from "next/link";
 import { useLanguage } from "@/context/language-context";
+import { useData } from "@/context/data-context";
 
 const stageProgress: Record<Opportunity['stage'], number> = {
   lead: 10,
@@ -40,15 +39,7 @@ const stageColor: Record<Opportunity['stage'], string> = {
 
 export default function OpportunitiesPage() {
     const { t } = useLanguage();
-    const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-
-    useEffect(() => {
-      const fetchOpportunities = async () => {
-        const opportunitiesData = await getOpportunities();
-        setOpportunities(opportunitiesData);
-      }
-      fetchOpportunities();
-    }, []);
+    const { opportunities } = useData();
 
     const handleDelete = (id: string) => {
         alert(`Deleting opportunity ${id}`);

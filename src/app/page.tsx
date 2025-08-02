@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -24,11 +23,7 @@ import {
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { PageHeader } from "@/components/page-header";
-import { getClients } from '@/services/clientService';
-import { getOpportunities } from '@/services/opportunityService';
-import { getTasks } from '@/services/taskService';
-import { getInteractions } from '@/services/interactionService';
-import type { Client, Opportunity, Task, Interaction } from '@/lib/types';
+import { useData } from '@/context/data-context';
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DollarSign, Users, Briefcase, Activity, CheckCircle, Clock } from "lucide-react";
@@ -37,27 +32,8 @@ import { useLanguage } from "@/context/language-context";
 
 export default function DashboardPage() {
   const { t } = useLanguage();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const { clients, opportunities, tasks, interactions } = useData();
   
-  useEffect(() => {
-    const fetchData = async () => {
-      const [clientsData, opportunitiesData, tasksData, interactionsData] = await Promise.all([
-        getClients(),
-        getOpportunities(),
-        getTasks(),
-        getInteractions(),
-      ]);
-      setClients(clientsData);
-      setOpportunities(opportunitiesData);
-      setTasks(tasksData);
-      setInteractions(interactionsData);
-    };
-    fetchData();
-  }, []);
-
   const totalClients = clients.length;
   const activeDeals = opportunities.filter(o => o.stage !== 'won' && o.stage !== 'lost').length;
   const totalRevenue = opportunities.filter(o => o.stage === 'won').reduce((sum, o) => sum + o.value, 0);

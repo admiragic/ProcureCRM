@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,25 +25,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import { getClients } from "@/services/clientService";
 import { addInteraction } from "@/services/interactionService";
 import type { Client } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useData } from "@/context/data-context";
 
 export function InteractionForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
-  const [clients, setClients] = useState<Client[]>([]);
-
-  useEffect(() => {
-    const fetchClients = async () => {
-      const clientsData = await getClients();
-      setClients(clientsData);
-    };
-    fetchClients();
-  }, []);
+  const { clients } = useData();
 
   const interactionFormSchema = z.object({
     clientId: z.string().min(1, t('interaction_form.client_required')),

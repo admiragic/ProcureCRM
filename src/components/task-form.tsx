@@ -26,16 +26,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save, CalendarIcon, Upload, X, Paperclip } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import { getClients } from "@/services/clientService";
 import { addTask } from "@/services/taskService";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import type { Client, Task } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useData } from "@/context/data-context";
 
 export function TaskForm() {
   const { t } = useLanguage();
@@ -43,15 +43,7 @@ export function TaskForm() {
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const [clients, setClients] = useState<Client[]>([]);
-
-  useEffect(() => {
-    const fetchClients = async () => {
-      const clientsData = await getClients();
-      setClients(clientsData);
-    };
-    fetchClients();
-  }, []);
+  const { clients } = useData();
 
   const taskFormSchema = z.object({
     title: z.string().min(5, t('task_form.title_required')),
