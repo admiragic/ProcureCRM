@@ -17,6 +17,7 @@ type AuthContextType = {
   updateUser: (user: User) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
   getUsers: () => Promise<User[]>;
+  users: User[];
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
