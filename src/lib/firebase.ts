@@ -1,8 +1,8 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAnAHY6pg-cHWCIkOipc_qKeZUYuYsuzQk",
@@ -14,10 +14,10 @@ const firebaseConfig = {
 };
 
 // Inicijaliziraj Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
+const getDb = (): Firestore => getFirestore(app);
+const getFirebaseAuth = (): Auth => getAuth(app);
+const getStorageInstance = (): FirebaseStorage => getStorage(app);
 
-export { app, db, auth, storage };
+export { app, getDb, getFirebaseAuth, getStorageInstance };

@@ -1,9 +1,10 @@
 
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { collection, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import type { Interaction, Client } from '@/lib/types';
 
 export const getInteractions = async (): Promise<Interaction[]> => {
+    const db = getDb();
     const interactionsCollection = collection(db, 'interactions');
     const snapshot = await getDocs(interactionsCollection);
     const interactions = await Promise.all(snapshot.docs.map(async (d) => {
@@ -22,6 +23,7 @@ export const getInteractions = async (): Promise<Interaction[]> => {
 };
 
 export const addInteraction = async (interaction: Omit<Interaction, 'id' | 'date' | 'client'>) => {
+    const db = getDb();
     const interactionsCollection = collection(db, 'interactions');
     return await addDoc(interactionsCollection, {
         ...interaction,
