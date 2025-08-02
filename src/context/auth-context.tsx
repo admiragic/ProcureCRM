@@ -2,11 +2,11 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { getAuth, onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, getDocs, collection, getFirestore } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, getDocs, collection, getFirestore, setDoc } from 'firebase/firestore';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
-import { app } from '@/lib/firebase'; // Import app
+import { app, auth as firebaseAuth } from '@/lib/firebase'; 
 
 type AuthContextType = {
   user: User | null;
@@ -23,11 +23,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const db = getFirestore(app);
 
   const fetchUserDocument = useCallback(async (firebaseUser: FirebaseUser): Promise<User | null> => {
       if (!firebaseUser) return null;
       try {
-          const db = getFirestore(app);
           const userDocRef = doc(db, 'users', firebaseUser.uid);
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
@@ -46,11 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error("Error fetching user document:", error);
           return null;
       }
-  }, []);
+  }, [db]);
 
   useEffect(() => {
-    const auth = getAuth(app);
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
       if (firebaseUser) {
         const userData = await fetchUserDocument(firebaseUser);
         setUser(userData);
@@ -65,30 +64,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const logout = async () => {
-    const auth = getAuth(app);
-    await signOut(auth);
+    await signOut(firebaseAuth);
     router.push('/login');
   };
 
   const addUser = async (newUser: User) => {
-    const auth = getAuth(app);
-    const db = getFirestore(app);
     if (!newUser.password) throw new Error("Password is required for new user");
-    // This part of creating user is not ideal inside the context, but we keep it for now.
-    // In a real app, this should be a backend function.
-    const { createUserWithEmailAndPassword } = await import('firebase/auth');
-    const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
-    const uid = userCredential.user.uid;
-    await setDoc(doc(db, 'users', uid), {
-      username: newUser.username,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-    });
+    
+    try {
+        const userCredential = await createUserWithEmailAndPassword(firebaseAuth, newUser.email, newUser.password);
+        const uid = userCredential.user.uid;
+        
+        await setDoc(doc(db, 'users', uid), {
+          username: newUser.username,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+        });
+
+    } catch(error) {
+        console.error("Error creating new user:", error);
+        throw error;
+    }
   };
 
   const getUsers = async (): Promise<User[]> => {
-    const db = getFirestore(app);
     const querySnapshot = await getDocs(collection(db, "users"));
     return querySnapshot.docs.map(d => ({ id: d.id, ...d.data() } as User));
   };
