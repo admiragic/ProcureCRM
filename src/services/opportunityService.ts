@@ -1,9 +1,10 @@
 
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
 import type { Opportunity, Client } from '@/lib/types';
 
 export const getOpportunities = async (): Promise<Opportunity[]> => {
+    const db = getDb();
     const opportunitiesCollection = collection(db, 'opportunities');
     const snapshot = await getDocs(opportunitiesCollection);
     const opportunities = await Promise.all(snapshot.docs.map(async (d) => {
@@ -22,6 +23,7 @@ export const getOpportunities = async (): Promise<Opportunity[]> => {
 };
 
 export const addOpportunity = async (opportunity: Omit<Opportunity, 'id' | 'client'>) => {
+    const db = getDb();
     const opportunitiesCollection = collection(db, 'opportunities');
     return await addDoc(opportunitiesCollection, opportunity);
 };
