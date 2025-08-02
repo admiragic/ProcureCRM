@@ -22,6 +22,7 @@ const GenerateFollowUpEmailInputSchema = z.object({
     ),
   opportunityStage: z.string().describe('The current stage of the sales opportunity (lead, prospect, customer).'),
   assignedSalesperson: z.string().describe('The name of the assigned salesperson.'),
+  language: z.string().describe('The language for the email output (e.g., "en", "hr", "pl").'),
 });
 export type GenerateFollowUpEmailInput = z.infer<typeof GenerateFollowUpEmailInputSchema>;
 
@@ -43,6 +44,8 @@ const generateFollowUpEmailPrompt = ai.definePrompt({
   prompt: `You are an AI assistant specializing in generating personalized follow-up emails for sales representatives.
 
   Based on the recent client interactions, opportunity stage, and assigned salesperson, generate a follow-up email that is both engaging and effective.
+  
+  IMPORTANT: The generated email MUST be in the following language: {{{language}}}.
 
   Client Name: {{{clientName}}}
   Recent Interactions: {{{recentInteractions}}}

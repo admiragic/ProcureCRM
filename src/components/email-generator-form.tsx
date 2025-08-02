@@ -32,7 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/context/language-context';
 
 export function EmailGeneratorForm() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [result, setResult] = useState<GenerateFollowUpEmailOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -60,7 +60,7 @@ export function EmailGeneratorForm() {
     setIsLoading(true);
     setResult(null);
     try {
-      const response = await generateFollowUpEmail(values);
+      const response = await generateFollowUpEmail({ ...values, language });
       setResult(response);
     } catch (error) {
       console.error('Error generating email:', error);
