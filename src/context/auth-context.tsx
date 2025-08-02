@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, getDocs, collection, setDoc } from 'firebase/firestore';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
@@ -11,7 +11,6 @@ import { auth, db } from '@/lib/firebase';
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   addUser: (user: User) => Promise<void>;
   getUsers: () => Promise<User[]>;
@@ -62,12 +61,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [fetchUserDocument]);
 
-  const login = async (email: string, pass: string) => {
-    // The login logic is back in the context
-    await signInWithEmailAndPassword(auth, email, pass);
-    // onAuthStateChanged will then handle setting the user and redirecting
-  };
-
   const logout = async () => {
     await signOut(auth);
     router.push('/login');
@@ -99,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers, fetchUserDocument }}>
+    <AuthContext.Provider value={{ user, loading, logout, addUser, getUsers, fetchUserDocument }}>
       {children}
     </AuthContext.Provider>
   );

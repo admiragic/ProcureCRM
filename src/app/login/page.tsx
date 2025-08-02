@@ -9,13 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('zoran@temporis.hr');
   const [password, setPassword] = useState('shaban$$');
   const [error, setError] = useState('');
   const router = useRouter();
-  const { user, loading, login } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     // Redirect if user is already logged in
@@ -28,7 +30,8 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setError('');
     try {
-      await login(email, password);
+      // Logic is moved here from the context
+      await signInWithEmailAndPassword(auth, email, password);
       // onAuthStateChanged in AuthProvider will handle setting the user state
       // and the useEffect above will handle redirection.
     } catch (err: any) {
