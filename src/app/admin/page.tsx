@@ -10,7 +10,7 @@ import { useLanguage } from "@/context/language-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, FileText, UserPlus, FileUp, FileDown } from "lucide-react";
-import type { User } from "@/lib/types";
+import type { User } from "@/lib/users";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import React from "react";
