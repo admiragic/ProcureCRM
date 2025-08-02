@@ -30,19 +30,29 @@ import { DollarSign, Users, Briefcase, Activity, CheckCircle, Clock } from "luci
 import { format, parseISO } from 'date-fns';
 import { useLanguage } from "@/context/language-context";
 
+/**
+ * The main dashboard page component.
+ * It provides a high-level overview of the CRM data, including key metrics,
+ * a sales overview chart, upcoming tasks, and recent activities.
+ * @returns {React.ReactElement} The rendered dashboard page.
+ */
 export default function DashboardPage() {
   const { t } = useLanguage();
+  // Fetching all necessary data from the DataContext
   const { clients, opportunities, tasks, interactions, loading } = useData();
   
+  // Display a loading indicator while data is being fetched
   if (loading) {
     return <div>{t('login_page.loading')}</div>
   }
 
+  // Calculating key metrics from the fetched data
   const totalClients = clients.length;
   const activeDeals = opportunities.filter(o => o.stage !== 'won' && o.stage !== 'lost').length;
   const totalRevenue = opportunities.filter(o => o.stage === 'won').reduce((sum, o) => sum + o.value, 0);
   const overdueTasks = tasks.filter(t => t.status !== 'closed' && new Date(t.dueDate) < new Date()).length;
 
+  // Processing data for the sales overview bar chart
   const opportunitiesByStage = opportunities.reduce((acc, opp) => {
     const stage = opp.stage.charAt(0).toUpperCase() + opp.stage.slice(1);
     const existing = acc.find(item => item.stage === stage);
@@ -54,6 +64,7 @@ export default function DashboardPage() {
     return acc;
   }, [] as { stage: string, count: number }[]);
 
+  // Configuration for the chart colors and labels
   const chartConfig = {
     count: {
       label: "Deals",
@@ -64,6 +75,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />
+      {/* Key metrics cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -107,6 +119,7 @@ export default function DashboardPage() {
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-6">
+        {/* Sales Overview Chart */}
         <Card className="lg:col-span-4">
           <CardHeader>
             <CardTitle>{t('dashboard.sales_overview')}</CardTitle>
@@ -126,6 +139,7 @@ export default function DashboardPage() {
             </ChartContainer>
           </CardContent>
         </Card>
+        {/* Upcoming Tasks List */}
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>{t('dashboard.upcoming_tasks')}</CardTitle>
@@ -147,6 +161,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      {/* Recent Activity Table */}
        <div className="grid gap-4 mt-6">
           <Card>
             <CardHeader>
@@ -170,6 +185,7 @@ export default function DashboardPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
+                             {/* Using an external service to generate avatars based on email */}
                              <AvatarImage src={`https://avatar.vercel.sh/${interaction.client?.email}.png`} alt={interaction.client?.contactPerson} />
                             <AvatarFallback>{interaction.client?.companyName.charAt(0)}</AvatarFallback>
                           </Avatar>

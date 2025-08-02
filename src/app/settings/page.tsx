@@ -8,15 +8,29 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from 'react';
 
+/**
+ * The settings page component.
+ * It allows users to customize their application experience, such as changing the theme.
+ * @returns {React.ReactElement} The rendered settings page.
+ */
 export default function SettingsPage() {
   const { t } = useLanguage();
+  // State to track whether dark mode is currently enabled.
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+   /**
+    * Effect to check the initial theme preference when the component mounts.
+    * It checks if the 'dark' class is present on the `<html>` element.
+    */
    useEffect(() => {
         const isDark = document.documentElement.classList.contains('dark');
         setIsDarkMode(isDark);
     }, []);
 
+    /**
+     * Toggles the application theme between light and dark mode.
+     * It adds or removes the 'dark' class from the `<html>` element.
+     */
     const toggleTheme = () => {
         document.documentElement.classList.toggle('dark');
         setIsDarkMode(!isDarkMode);

@@ -21,11 +21,17 @@ import { useLanguage } from "@/context/language-context";
 import { useToast } from "@/hooks/use-toast";
 import { Save } from "lucide-react";
 
+/**
+ * The user profile page.
+ * It displays user information and provides a form to change the password.
+ * @returns {React.ReactElement | null} The rendered profile page, or null if user is not available.
+ */
 export default function ProfilePage() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
 
+  // Zod schema for password change form validation
   const profileFormSchema = z.object({
     currentPassword: z.string().min(1, { message: "Current password is required." }),
     newPassword: z.string().min(6, { message: "New password must be at least 6 characters." }),
@@ -33,6 +39,7 @@ export default function ProfilePage() {
 
   type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
+  // Initialize react-hook-form
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -41,8 +48,13 @@ export default function ProfilePage() {
     },
   });
 
+  /**
+   * Handles the submission of the change password form.
+   * @param {ProfileFormValues} values - The form values.
+   */
   const onSubmit = (values: ProfileFormValues) => {
-    // This is a mock implementation. In a real app, you'd call an API.
+    // This is a mock implementation. In a real app, you'd call an API
+    // that securely verifies the current password and updates it.
     console.log("Changing password for:", user?.username, "with values:", values);
     toast({
       title: "Password Updated",
@@ -51,6 +63,7 @@ export default function ProfilePage() {
     form.reset();
   };
 
+  // If the user data is not yet available, don't render anything.
   if (!user) return null;
 
   return (
@@ -60,6 +73,7 @@ export default function ProfilePage() {
         description="View and manage your profile details."
       />
       <div className="grid gap-8 md:grid-cols-3">
+        {/* User Information Card */}
         <div className="md:col-span-1">
           <Card>
             <CardHeader>
@@ -71,6 +85,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
+        {/* Change Password Card */}
         <div className="md:col-span-2">
            <Card>
                 <CardHeader>

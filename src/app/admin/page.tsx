@@ -28,7 +28,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-// Helper function to convert array of objects to CSV
+/**
+ * Converts an array of objects into a CSV string.
+ * @template T - The type of objects in the array.
+ * @param {T[]} data - The array of objects to convert.
+ * @param {boolean} [headerOnly=false] - If true, only the header row is returned.
+ * @returns {string} The CSV formatted string.
+ */
 const convertToCSV = <T extends object>(data: T[], headerOnly = false): string => {
     if (data.length === 0) return '';
     
@@ -40,13 +46,18 @@ const convertToCSV = <T extends object>(data: T[], headerOnly = false): string =
         return header.join(',');
     }
     
+    // Replacer function to handle null or undefined values in JSON.stringify
     const replacer = (key: string, value: any) => value === null || value === undefined ? '' : value
     let csv = data.map(row => header.map(fieldName => JSON.stringify((row as any)[fieldName], replacer)).join(','));
     csv.unshift(header.join(','));
     return csv.join('\r\n');
 };
 
-// Helper function to trigger CSV download
+/**
+ * Triggers a file download for the given CSV string.
+ * @param {string} csvString - The CSV content to download.
+ * @param {string} filename - The name of the file to be downloaded.
+ */
 const downloadCSV = (csvString: string, filename: string) => {
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
@@ -62,26 +73,43 @@ const downloadCSV = (csvString: string, filename: string) => {
 };
 
 
+/**
+ * The main component for the Admin page.
+ * It allows administrators to manage users, and import/export data.
+ * @returns {React.ReactElement} The rendered admin page.
+ */
 export default function AdminPage() {
   const { deleteUser } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
+  // Fetching all necessary data from the DataContext
   const { clients, interactions, opportunities, tasks, users, setUsers, loading } = useData();
 
+  // State for managing the user editing and deletion dialogs
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
 
+  /**
+   * Handles the action to edit a user.
+   * It sets the user to be edited and opens the edit dialog.
+   * @param {User} user - The user object to be edited.
+   */
   const handleEditUser = (user: User) => {
     setUserToEdit(user);
     setIsEditUserDialogOpen(true);
   };
 
+  /**
+   * Handles the deletion of a user.
+   * It calls the deleteUser function from the AuthContext and updates the local state.
+   */
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
 
     try {
         await deleteUser(userToDelete.id);
+        // Optimistically update the UI by removing the user from the local state
         setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
         toast({
             title: "User Deleted",
@@ -94,7 +122,7 @@ export default function AdminPage() {
             variant: "destructive",
         });
     } finally {
-        setUserToDelete(null);
+        setUserToDelete(null); // Close the confirmation dialog
     }
   };
 
@@ -102,6 +130,10 @@ export default function AdminPage() {
     return <div>{t('login_page.loading')}</div>
   }
 
+  /**
+   * Handles the export of data to a CSV file.
+   * @param {'clients' | 'interactions' | 'opportunities' | 'tasks'} dataType - The type of data to export.
+   */
   const handleExport = (dataType: 'clients' | 'interactions' | 'opportunities' | 'tasks') => {
     let data: any[] = [];
     let filename = `${dataType}.csv`;
@@ -133,6 +165,11 @@ export default function AdminPage() {
     }
   };
 
+  /**
+   * Triggers the download of a CSV template for a specific data type.
+   * This helps users format their data correctly for import.
+   * @param {'clients' | 'opportunities' | 'interactions' | 'tasks'} dataType - The type of data for the template.
+   */
   const handleDownloadTemplate = (dataType: 'clients' | 'opportunities' | 'interactions' | 'tasks') => {
     let headers: string[] = [];
     let filename = `${dataType}_template.csv`;
@@ -156,6 +193,10 @@ export default function AdminPage() {
     downloadCSV(headers.join(','), filename);
   };
   
+  /**
+   * Handles the file upload event for importing data.
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The file input change event.
+   */
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -188,12 +229,14 @@ export default function AdminPage() {
         description="Upravljajte korisnicima i postavkama sustava."
       />
       <div className="space-y-8">
+        {/* User table is displayed above the tabs */}
         <UserTable 
             data={users}
             onEdit={handleEditUser}
             onDelete={(user) => setUserToDelete(user)}
         />
         
+        {/* Tabs for organizing admin actions */}
         <Tabs defaultValue="add-user">
           <TabsList className="grid w-full grid-cols-3 max-w-lg">
             <TabsTrigger value="add-user">
@@ -210,10 +253,12 @@ export default function AdminPage() {
             </TabsTrigger>
           </TabsList>
           
+          {/* Content for the "Add User" tab */}
           <TabsContent value="add-user" className="mt-6">
-            <AddUserForm onUserAdded={() => { /* Data will be refreshed by onValue listener */ }} />
+            <AddUserForm onUserAdded={() => { /* Data will be refreshed by onValue listener in DataContext */ }} />
           </TabsContent>
           
+          {/* Content for the "Export Data" tab */}
           <TabsContent value="export" className="mt-6">
             <Card>
                 <CardHeader>
@@ -241,6 +286,7 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
           
+          {/* Content for the "Import Data" tab */}
           <TabsContent value="import" className="mt-6">
              <Card>
                 <CardHeader>
@@ -248,6 +294,7 @@ export default function AdminPage() {
                     <CardDescription>Upload CSV files to add data to the application.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-8">
+                    {/* Section for downloading CSV templates */}
                     <div className="space-y-4">
                         <h4 className="text-sm font-medium">1. Download Template</h4>
                         <p className="text-sm text-muted-foreground">Start by downloading a template to ensure your data is in the correct format.</p>
@@ -266,6 +313,7 @@ export default function AdminPage() {
                             </Button>
                         </div>
                     </div>
+                    {/* Section for uploading the filled CSV file */}
                     <div className="space-y-4">
                         <h4 className="text-sm font-medium">2. Upload File</h4>
                         <p className="text-sm text-muted-foreground">Once you've filled out the template, upload the CSV file here.</p>
@@ -278,17 +326,22 @@ export default function AdminPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Dialog for editing user information */}
       {userToEdit && (
         <EditUserDialog
             isOpen={isEditUserDialogOpen}
             setIsOpen={setIsEditUserDialogOpen}
             user={userToEdit}
             onUserUpdated={(updatedUser) => {
+                // Optimistically update the UI
                 setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
                 setUserToEdit(null);
             }}
         />
       )}
+
+      {/* Alert dialog for confirming user deletion */}
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>

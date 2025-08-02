@@ -21,10 +21,16 @@ import { useLanguage } from "@/context/language-context"
 import { useAuth } from "@/context/auth-context"
 import Link from "next/link"
 
+/**
+ * The user navigation component.
+ * It displays the user's avatar and a dropdown menu with links to profile, settings, and a logout button.
+ * @returns {React.ReactElement | null} The rendered user navigation component, or null if no user is logged in.
+ */
 export function UserNav() {
   const { t } = useLanguage();
   const { user, logout } = useAuth();
 
+  // Don't render the component if there is no logged-in user.
   if (!user) {
     return null;
   }

@@ -11,6 +11,11 @@ import {
 import { useLanguage } from "@/context/language-context"
 import { Languages } from "lucide-react"
 
+/**
+ * A component that allows the user to switch the application language.
+ * It uses a dropdown menu to display the available languages.
+ * @returns {React.ReactElement} The rendered language switcher component.
+ */
 export function LanguageSwitcher() {
   const { setLanguage } = useLanguage();
 

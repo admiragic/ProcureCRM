@@ -24,15 +24,29 @@ import { Button } from "../ui/button"
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 
+/**
+ * Props for the UserTable component.
+ * @property {User[]} data - An array of user objects to display.
+ * @property {(user: User) => void} onEdit - Callback function when the edit action is triggered.
+ * @property {(user: User) => void} onDelete - Callback function when the delete action is triggered.
+ */
 interface UserTableProps {
     data: User[];
     onEdit: (user: User) => void;
     onDelete: (user: User) => void;
 }
 
+/**
+ * A table component for displaying and managing users.
+ * @param {UserTableProps} props - The component props.
+ * @returns {React.ReactElement} The rendered table.
+ */
 export function UserTable({ data, onEdit, onDelete }: UserTableProps) {
     const { t } = useLanguage();
 
+    /**
+     * Column definitions for the user table using @tanstack/react-table.
+     */
     const columns: ColumnDef<User>[] = [
       {
         accessorKey: "name",
@@ -49,6 +63,7 @@ export function UserTable({ data, onEdit, onDelete }: UserTableProps) {
       {
         accessorKey: "role",
         header: t('admin_page.table_role'),
+        // Custom cell renderer for the role to display a badge.
         cell: ({ row }) => {
             const role: User["role"] = row.getValue("role");
             return <Badge variant={role === 'admin' ? 'destructive' : 'secondary'} className="capitalize">{role}</Badge>
@@ -56,6 +71,7 @@ export function UserTable({ data, onEdit, onDelete }: UserTableProps) {
       },
       {
         id: "actions",
+        // Custom cell renderer for the actions column.
         cell: ({ row }) => {
             const user = row.original;
             return (
@@ -82,6 +98,7 @@ export function UserTable({ data, onEdit, onDelete }: UserTableProps) {
       }
     ]
 
+  // Initialize the table instance with data, columns, and core models.
   const table = useReactTable({
     data,
     columns,

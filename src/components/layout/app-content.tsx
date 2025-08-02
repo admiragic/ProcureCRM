@@ -9,19 +9,33 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useLanguage } from '@/context/language-context';
 
+/**
+ * This component acts as the main content wrapper for the application.
+ * It determines whether to show the main app layout (sidebar, header, content)
+ * or the login page based on the user's authentication status.
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The page content to be rendered.
+ * @returns {React.ReactElement} The rendered application content.
+ */
 export function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
 
+  /**
+   * Effect to handle redirection based on authentication status.
+   * If the auth check is complete (`!loading`) and there is no user,
+   * it redirects to the login page.
+   */
   useEffect(() => {
-    // Redirect if loading is done and there's no user
     if (!loading && !user) {
       router.push('/login');
     }
   }, [user, loading, router]);
 
-  // While checking auth state, show a loading screen
+  /**
+   * While the authentication status is being checked, show a loading screen.
+   */
   if (loading) {
      return (
       <div className="flex items-center justify-center min-h-screen">
@@ -30,12 +44,19 @@ export function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not logged in, show the login page children (which is the login page itself)
+  /**
+   * If the user is not logged in, render the children directly.
+   * In the case of a protected route, this will be the login page
+   * due to the redirection logic above.
+   */
   if (!user) {
     return <>{children}</>;
   }
 
-  // If user is logged in, show the main app layout
+  /**
+   * If the user is logged in, render the full application layout
+   * with the sidebar, header, and the main page content.
+   */
   return (
     <SidebarProvider>
       <AppSidebar />

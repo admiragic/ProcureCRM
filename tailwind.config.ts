@@ -1,19 +1,34 @@
+/**
+ * @file Tailwind CSS configuration file.
+ * This file configures the design system for the application, including theme colors,
+ * fonts, and plugins.
+ * @see https://tailwindcss.com/docs/configuration
+ */
+
 import type {Config} from 'tailwindcss';
 
 export default {
+  // Enables dark mode based on the 'class' strategy (e.g., <html class="dark">).
   darkMode: ['class'],
+  
+  // Specifies the files to scan for Tailwind classes.
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  
+  // Defines the application's theme.
   theme: {
     extend: {
+      // Custom font families used in the application.
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['"Space Grotesk"', 'sans-serif'],
         code: ['"Source Code Pro"', 'monospace'],
       },
+      // Custom color palette using CSS variables defined in `globals.css`.
+      // This allows for dynamic theming (light/dark mode).
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -66,11 +81,13 @@ export default {
           ring: 'hsl(var(--sidebar-ring))',
         },
       },
+      // Custom border radius values based on a CSS variable for consistency.
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      // Custom keyframe animations for components like accordions.
       keyframes: {
         'accordion-down': {
           from: {
@@ -89,11 +106,13 @@ export default {
           },
         },
       },
+      // Associates the keyframes with animation utilities.
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
   },
+  // Enables the `tailwindcss-animate` plugin for animation utilities.
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;

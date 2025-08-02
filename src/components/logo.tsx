@@ -1,5 +1,13 @@
+/**
+ * @file Defines the SVG Logo component for the application.
+ */
 import type { SVGProps } from "react";
 
+/**
+ * A simple SVG logo component.
+ * @param {SVGProps<SVGSVGElement>} props - Standard SVG props.
+ * @returns {React.ReactElement} The rendered SVG logo.
+ */
 export default function Logo(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -9,6 +17,7 @@ export default function Logo(props: SVGProps<SVGSVGElement>) {
       height="30"
       {...props}
     >
+      {/* The text is split into two parts to allow for different colors */}
       <text
         x="10"
         y="35"

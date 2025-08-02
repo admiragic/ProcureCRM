@@ -44,10 +44,20 @@ import { Card } from "@/components/ui/card"
 import { useLanguage } from "@/context/language-context"
 import Link from "next/link"
 
+/**
+ * A component that renders the actions dropdown for an interaction row.
+ * @param {object} props - The component props.
+ * @param {any} props.row - The row object from @tanstack/react-table.
+ * @returns {React.ReactElement} The rendered actions cell.
+ */
 const ActionCell = ({ row }: { row: any }) => {
     const { t } = useLanguage();
     const interaction = row.original;
 
+    /**
+     * Handles the delete action.
+     * Note: This is a placeholder.
+     */
     const handleDelete = () => {
         alert(t('interaction_table.delete_alert', { id: interaction.id }));
     };
@@ -67,6 +77,7 @@ const ActionCell = ({ row }: { row: any }) => {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                    {/* This should link to an edit page */}
                     <Link href={`/interactions/new`}>{t('interaction_table.edit_button')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
@@ -77,6 +88,9 @@ const ActionCell = ({ row }: { row: any }) => {
     );
 };
 
+/**
+ * Column definitions for the interaction table.
+ */
 export const columns: ColumnDef<Interaction>[] = [
   {
     id: "select",
@@ -176,6 +190,13 @@ export const columns: ColumnDef<Interaction>[] = [
   },
 ]
 
+/**
+ * The main component for the interaction data table.
+ * It uses @tanstack/react-table to provide sorting, filtering, and pagination.
+ * @param {object} props - The component props.
+ * @param {Interaction[]} props.data - The array of interaction data to display.
+ * @returns {React.ReactElement} The rendered data table.
+ */
 export function InteractionTable({ data }: { data: Interaction[] }) {
   const { t } = useLanguage();
   const [sorting, setSorting] = React.useState<SortingState>([])

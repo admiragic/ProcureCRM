@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -31,12 +32,17 @@ import { Sparkles, Clipboard, Check } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/context/language-context';
 
+/**
+ * A form component for generating personalized follow-up emails using an AI model.
+ * @returns {React.ReactElement} The rendered form and result display.
+ */
 export function EmailGeneratorForm() {
   const { t, language } = useLanguage();
   const [result, setResult] = useState<GenerateFollowUpEmailOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
+  // Zod schema for form validation
   const formSchema = z.object({
     clientName: z.string().min(2, t('email_generator.client_name_required')),
     recentInteractions: z.string().min(10, t('email_generator.interactions_required')),
@@ -46,6 +52,7 @@ export function EmailGeneratorForm() {
   
   type FormValues = z.infer<typeof formSchema>;
 
+  // Initialize react-hook-form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,30 +63,41 @@ export function EmailGeneratorForm() {
     },
   });
 
+  /**
+   * Handles the form submission to generate the email.
+   * It calls the AI flow and manages loading and result states.
+   * @param {FormValues} values - The validated form values.
+   */
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     setResult(null);
     try {
+      // Call the AI flow with form values and the current language
       const response = await generateFollowUpEmail({ ...values, language });
       setResult(response);
     } catch (error) {
       console.error('Error generating email:', error);
-      // You could add a toast notification here
+      // In a real app, you would show a toast notification for the error.
     } finally {
       setIsLoading(false);
     }
   }
   
+  /**
+   * Copies the generated email content to the clipboard.
+   */
   const handleCopy = () => {
     if (result?.emailContent) {
       navigator.clipboard.writeText(result.emailContent);
       setIsCopied(true);
+      // Reset the copied state after 2 seconds
       setTimeout(() => setIsCopied(false), 2000);
     }
   };
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
+      {/* Form Card */}
       <Card>
         <CardHeader>
           <CardTitle>{t('email_generator.form_title')}</CardTitle>
@@ -167,6 +185,7 @@ export function EmailGeneratorForm() {
         </CardContent>
       </Card>
       
+      {/* Result Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -181,6 +200,7 @@ export function EmailGeneratorForm() {
         </CardHeader>
         <CardContent>
             {isLoading && (
+                // Skeleton loader while the email is being generated
                 <div className="space-y-4">
                     <Skeleton className="h-4 w-1/3" />
                     <Skeleton className="h-4 w-full" />
@@ -191,6 +211,7 @@ export function EmailGeneratorForm() {
                 </div>
             )}
             {!isLoading && result && (
+                // Display the generated email in a read-only textarea
                 <Textarea
                     readOnly
                     value={result.emailContent}
@@ -198,6 +219,7 @@ export function EmailGeneratorForm() {
                 />
             )}
             {!isLoading && !result && (
+                 // Placeholder when no result is available
                  <div className="flex items-center justify-center h-80 border-2 border-dashed rounded-lg">
                     <p className="text-muted-foreground">{t('email_generator.result_placeholder')}</p>
                 </div>

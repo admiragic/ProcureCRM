@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/language-context";
 import { useData } from "@/context/data-context";
 
+// A map to determine the progress percentage for each opportunity stage.
 const stageProgress: Record<Opportunity['stage'], number> = {
   lead: 10,
   prospecting: 25,
@@ -28,6 +29,7 @@ const stageProgress: Record<Opportunity['stage'], number> = {
   lost: 100,
 };
 
+// A map to associate a color with each opportunity stage for visual distinction.
 const stageColor: Record<Opportunity['stage'], string> = {
     lead: "bg-gray-500",
     prospecting: "bg-blue-500",
@@ -37,14 +39,26 @@ const stageColor: Record<Opportunity['stage'], string> = {
     lost: "bg-red-500",
 }
 
+/**
+ * The main page for displaying and managing sales opportunities.
+ * It renders opportunities as cards and provides options to add new ones.
+ * @returns {React.ReactElement} The rendered opportunities page.
+ */
 export default function OpportunitiesPage() {
     const { t } = useLanguage();
+    // Fetching opportunities data and loading state from the DataContext
     const { opportunities, loading } = useData();
 
+    // Display a loading indicator while data is being fetched
     if (loading) {
         return <div>{t('login_page.loading')}</div>
     }
 
+    /**
+     * Handles the deletion of an opportunity.
+     * Note: This is a placeholder and should be implemented with a proper API call.
+     * @param {string} id - The ID of the opportunity to delete.
+     */
     const handleDelete = (id: string) => {
         alert(`Deleting opportunity ${id}`);
         // Here you would typically call an API to delete the opportunity
@@ -72,6 +86,7 @@ export default function OpportunitiesPage() {
                                     <CardTitle className="text-lg">{opp.client?.companyName}</CardTitle>
                                     <CardDescription>{t('opportunities_page.value')}: {opp.value.toLocaleString()} EUR</CardDescription>
                                 </div>
+                                {/* Dropdown menu for actions like edit, view client, delete */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -80,9 +95,11 @@ export default function OpportunitiesPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem asChild>
+                                            {/* Note: This should link to an edit page, e.g., /opportunities/edit/${opp.id} */}
                                             <Link href={`/opportunities/new`}>{t('opportunities_page.edit_button')}</Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
+                                            {/* Note: This should link to the specific client's page, e.g., /clients/${opp.clientId} */}
                                             <Link href={`/clients`}>{t('opportunities_page.view_client_button')}</Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(opp.id)}>

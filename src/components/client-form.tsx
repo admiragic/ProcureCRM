@@ -28,11 +28,17 @@ import { useToast } from "@/hooks/use-toast";
 import { addClient } from "@/services/clientService";
 import { useRouter } from "next/navigation";
 
+/**
+ * A form component for creating or editing a client.
+ * It uses react-hook-form for form state management and Zod for validation.
+ * @returns {React.ReactElement} The rendered client form.
+ */
 export function ClientForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
 
+  // Zod schema for client form validation, with localized error messages.
   const clientFormSchema = z.object({
     companyName: z.string().min(2, t('client_form.company_name_required')),
     contactPerson: z.string().min(2, t('client_form.contact_person_required')),
@@ -46,6 +52,7 @@ export function ClientForm() {
   
   type ClientFormValues = z.infer<typeof clientFormSchema>;
 
+  // Initialize the form with react-hook-form.
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema),
     defaultValues: {
@@ -60,6 +67,11 @@ export function ClientForm() {
     },
   });
 
+  /**
+   * Handles the form submission.
+   * It calls the `addClient` service, shows a toast notification, and redirects on success.
+   * @param {ClientFormValues} values - The validated form values.
+   */
   async function onSubmit(values: ClientFormValues) {
     try {
       await addClient(values);
@@ -67,7 +79,7 @@ export function ClientForm() {
           title: t('client_form.toast_success_title'),
           description: t('client_form.toast_success_description', { companyName: values.companyName }),
       });
-      router.push('/clients');
+      router.push('/clients'); // Redirect to the client list page
     } catch (error) {
       toast({
         title: "Error",

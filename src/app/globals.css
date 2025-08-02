@@ -3,36 +3,50 @@
 @tailwind utilities;
 
 body {
+  /* Sets a default sans-serif font stack for the entire application. */
   font-family: Arial, Helvetica, sans-serif;
 }
 
 @layer base {
+  /* 
+    This block defines the CSS custom properties (variables) for the light theme.
+    These variables are used by Tailwind CSS and ShadCN components to create a consistent
+    color scheme throughout the application. They are defined using HSL (Hue, Saturation, Lightness)
+    values for easier color manipulation.
+  */
   :root {
-    --background: 225 100% 97%;
-    --foreground: 220 25% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
-    --primary: 220 80% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 60% 90%;
-    --secondary-foreground: 220 25% 10%;
-    --muted: 220 60% 95%;
-    --muted-foreground: 220 25% 40%;
-    --accent: 162 100% 73%;
-    --accent-foreground: 162 100% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 60% 90%;
-    --input: 220 60% 98%;
-    --ring: 220 80% 55%;
+    /* Color variables */
+    --background: 225 100% 97%; /* Page background */
+    --foreground: 220 25% 10%; /* Default text color */
+    --card: 0 0% 100%; /* Card background */
+    --card-foreground: 220 25% 10%; /* Card text color */
+    --popover: 0 0% 100%; /* Popover background */
+    --popover-foreground: 220 25% 10%; /* Popover text color */
+    --primary: 220 80% 55%; /* Primary action color (buttons, links) */
+    --primary-foreground: 0 0% 100%; /* Text color on primary elements */
+    --secondary: 220 60% 90%; /* Secondary action/element color */
+    --secondary-foreground: 220 25% 10%; /* Text color on secondary elements */
+    --muted: 220 60% 95%; /* Muted background color */
+    --muted-foreground: 220 25% 40%; /* Muted text color */
+    --accent: 162 100% 73%; /* Accent color for highlights */
+    --accent-foreground: 162 100% 10%; /* Text color on accent elements */
+    --destructive: 0 84.2% 60.2%; /* Destructive action color (e.g., delete button) */
+    --destructive-foreground: 0 0% 98%; /* Text color on destructive elements */
+    --border: 220 60% 90%; /* Default border color */
+    --input: 220 60% 98%; /* Input field background */
+    --ring: 220 80% 55%; /* Focus ring color */
+
+    /* Border radius variable for consistent rounded corners */
     --radius: 0.5rem;
+
+    /* Chart-specific color variables */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 162 100% 73%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Sidebar-specific theme variables */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 25% 10%;
     --sidebar-primary: 220 80% 55%;
@@ -42,6 +56,12 @@ body {
     --sidebar-border: 220 60% 90%;
     --sidebar-ring: 220 80% 55%;
   }
+
+  /* 
+    This block defines the CSS custom properties for the dark theme.
+    When the `.dark` class is applied to the `html` element, these variables
+    override the default light theme variables.
+  */
   .dark {
     --background: 220 25% 10%;
     --foreground: 220 25% 95%;
@@ -79,10 +99,15 @@ body {
 }
 
 @layer base {
+  /* 
+    These are base styles applied to elements using Tailwind's `@apply` directive.
+  */
   * {
+    /* Sets the border color for all elements to the `--border` variable. */
     @apply border-border;
   }
   body {
+    /* Sets the background and text color for the entire body. */
     @apply bg-background text-foreground;
   }
 }

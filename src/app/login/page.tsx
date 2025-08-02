@@ -12,7 +12,13 @@ import Logo from '@/components/logo';
 import { useLanguage } from '@/context/language-context';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
+/**
+ * The login page component.
+ * It handles user authentication, displays a login form, and manages loading and error states.
+ * @returns {React.ReactElement} The rendered login page.
+ */
 export default function LoginPage() {
+  // State for form inputs, error messages, and loading status
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,23 +27,31 @@ export default function LoginPage() {
   const { user, loading: authLoading, login } = useAuth();
   const { t } = useLanguage();
 
+  /**
+   * Effect to redirect the user to the dashboard if they are already logged in.
+   * This runs whenever the user or authLoading state changes.
+   */
   useEffect(() => {
-    // Redirect if user is already logged in
     if (!authLoading && user) {
       router.push('/');
     }
   }, [user, authLoading, router]);
 
 
+  /**
+   * Handles the login form submission.
+   * It calls the `login` function from the AuthContext and handles potential errors.
+   */
   const handleLogin = async () => {
     setError('');
     setIsLoading(true);
     try {
       await login(email, password);
-      // onAuthStateChanged in AuthProvider will handle setting the user state
-      // and the useEffect above will handle redirection.
+      // After successful login, the onAuthStateChanged listener in AuthProvider
+      // will update the user state, and the useEffect above will handle redirection.
     } catch (err: any) {
       console.error("Login failed:", err);
+      // Provide user-friendly error messages based on the Firebase error code
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setError(t('login_page.error_invalid_credentials'));
       } else if (err.code === 'auth/configuration-not-found') {
@@ -51,7 +65,10 @@ export default function LoginPage() {
     }
   };
 
-  // Show a loading state while checking auth status
+  /**
+   * Shows a loading screen while the authentication status is being checked
+   * or if the user is already logged in and waiting for redirection.
+   */
   if (authLoading || user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
@@ -94,10 +111,12 @@ export default function LoginPage() {
                 disabled={loading}
               />
             </div>
+            {/* Display error message if login fails */}
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
             <Button onClick={handleLogin} className="w-full" disabled={loading}>
               {loading ? t('login_page.loading') : t('login_page.login_button')}
             </Button>
+            {/* Language switcher component */}
             <div className="mt-4 flex justify-center">
                 <LanguageSwitcher />
             </div>

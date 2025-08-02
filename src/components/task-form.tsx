@@ -31,12 +31,17 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState, useRef } from "react";
-import type { Client, Task } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useData } from "@/context/data-context";
 
+/**
+ * A form for creating or editing tasks.
+ * It includes fields for title, client, assignee, due date, time estimate, status,
+ * and allows for file uploads to Firebase Storage.
+ * @returns {React.ReactElement} The rendered task form.
+ */
 export function TaskForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -45,6 +50,7 @@ export function TaskForm() {
   const router = useRouter();
   const { clients } = useData();
 
+  // Zod schema for task form validation.
   const taskFormSchema = z.object({
     title: z.string().min(5, t('task_form.title_required')),
     clientId: z.string().nullable(),
@@ -58,6 +64,7 @@ export function TaskForm() {
   
   type TaskFormValues = z.infer<typeof taskFormSchema>;
 
+  // Initialize react-hook-form.
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
@@ -69,8 +76,15 @@ export function TaskForm() {
     },
   });
 
+  /**
+   * Handles the form submission.
+   * It uploads any attached files to Firebase Storage, gets their download URLs,
+   * and then saves the task data (including file URLs) to the database.
+   * @param {TaskFormValues} values - The validated form values.
+   */
   async function onSubmit(values: TaskFormValues) {
     try {
+      // Upload files and get their download URLs
       const fileURLs = await Promise.all(
         files.map(async (file) => {
           const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);
@@ -79,6 +93,7 @@ export function TaskForm() {
         })
       );
       
+      // Add the task to the database with the file URLs
       await addTask({ 
         ...values, 
         dueDate: format(values.dueDate, 'yyyy-MM-dd'),
@@ -89,6 +104,7 @@ export function TaskForm() {
           title: t('task_form.toast_success_title'),
           description: t('task_form.toast_success_description'),
       });
+      // Reset form and file state on success
       setFiles([]);
       form.reset();
       router.push('/tasks');
@@ -101,6 +117,10 @@ export function TaskForm() {
     }
   }
 
+  /**
+   * Handles changes to the file input.
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The input change event.
+   */
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
@@ -108,6 +128,10 @@ export function TaskForm() {
     }
   };
 
+  /**
+   * Removes a file from the list of files to be uploaded.
+   * @param {number} indexToRemove - The index of the file to remove.
+   */
   const handleRemoveFile = (indexToRemove: number) => {
     setFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
   };
@@ -246,6 +270,7 @@ export function TaskForm() {
                   </FormItem>
                 )}
               />
+              {/* File Upload Section */}
               <div className="md:col-span-2">
                 <FormLabel>Documents</FormLabel>
                 <div className="mt-2 flex flex-col gap-4">
@@ -254,12 +279,13 @@ export function TaskForm() {
                     multiple 
                     ref={fileInputRef} 
                     onChange={handleFileChange}
-                    className="hidden"
+                    className="hidden" // Hidden input, triggered by the button
                   />
                   <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="mr-2 h-4 w-4" />
                     Upload Documents
                   </Button>
+                  {/* Display list of attached files */}
                   {files.length > 0 && (
                     <div className="space-y-2 rounded-md border p-2">
                       <p className="text-sm font-medium">Attached Files:</p>

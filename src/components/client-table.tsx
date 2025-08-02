@@ -43,10 +43,21 @@ import { Card } from "@/components/ui/card"
 import { useLanguage } from "@/context/language-context"
 import Link from "next/link"
 
+/**
+ * A component that renders the actions for a client row in the table.
+ * It includes a dropdown menu with options like copy ID, view, edit, and delete.
+ * @param {object} props - The component props.
+ * @param {any} props.row - The row object from @tanstack/react-table.
+ * @returns {React.ReactElement} The rendered actions cell.
+ */
 const ActionCell = ({ row }: { row: any }) => {
     const { t } = useLanguage();
     const client = row.original;
 
+    /**
+     * Handles the delete action.
+     * Note: This is a placeholder and should be implemented with a proper API call and confirmation dialog.
+     */
     const handleDelete = () => {
         alert(t('client_table.delete_alert', { companyName: client.companyName }));
         // Here you would typically call an API to delete the client
@@ -67,9 +78,11 @@ const ActionCell = ({ row }: { row: any }) => {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                    {/* Note: This should link to a specific client's detail page, e.g., /clients/${client.id} */}
                     <Link href={`/clients/new`}>{t('client_table.view_client')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                    {/* Note: This should link to a specific client's edit page, e.g., /clients/edit/${client.id} */}
                     <Link href={`/clients/new`}>{t('client_table.edit_client')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
@@ -80,6 +93,9 @@ const ActionCell = ({ row }: { row: any }) => {
     );
 };
 
+/**
+ * Column definitions for the client table.
+ */
 export const columns: ColumnDef<Client>[] = [
   {
     id: "select",
@@ -180,8 +196,16 @@ export const columns: ColumnDef<Client>[] = [
   },
 ]
 
+/**
+ * The main component for the client data table.
+ * It uses @tanstack/react-table to provide sorting, filtering, pagination, and column visibility.
+ * @param {object} props - The component props.
+ * @param {Client[]} props.data - The array of client data to display.
+ * @returns {React.ReactElement} The rendered data table.
+ */
 export function ClientTable({ data }: { data: Client[] }) {
   const { t } = useLanguage();
+  // State for table sorting, filtering, visibility, and row selection
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -190,6 +214,7 @@ export function ClientTable({ data }: { data: Client[] }) {
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
+  // Initialize the table instance
   const table = useReactTable({
     data,
     columns,

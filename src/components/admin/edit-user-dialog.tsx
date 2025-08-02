@@ -35,6 +35,13 @@ import { useAuth } from "@/context/auth-context";
 import type { User } from "@/lib/users";
 import { useEffect } from "react";
 
+/**
+ * Props for the EditUserDialog component.
+ * @property {boolean} isOpen - Whether the dialog is open.
+ * @property {(open: boolean) => void} setIsOpen - Function to set the open state of the dialog.
+ * @property {User} user - The user object to be edited.
+ * @property {(user: User) => void} onUserUpdated - Callback function executed after a user is successfully updated.
+ */
 interface EditUserDialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -42,6 +49,7 @@ interface EditUserDialogProps {
   onUserUpdated: (user: User) => void;
 }
 
+// Zod schema for validating the user edit form.
 const userFormSchema = z.object({
   name: z.string().min(2, "Name is required."),
   email: z.string().email("Invalid email address."),
@@ -51,6 +59,11 @@ const userFormSchema = z.object({
 
 type UserFormValues = z.infer<typeof userFormSchema>;
 
+/**
+ * A dialog component for editing user information.
+ * @param {EditUserDialogProps} props - The component props.
+ * @returns {React.ReactElement} The rendered dialog.
+ */
 export function EditUserDialog({ isOpen, setIsOpen, user, onUserUpdated }: EditUserDialogProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -60,6 +73,9 @@ export function EditUserDialog({ isOpen, setIsOpen, user, onUserUpdated }: EditU
     resolver: zodResolver(userFormSchema),
   });
 
+  /**
+   * Effect to reset the form with the user's data whenever the user prop changes.
+   */
   useEffect(() => {
     if (user) {
       form.reset({
@@ -71,6 +87,10 @@ export function EditUserDialog({ isOpen, setIsOpen, user, onUserUpdated }: EditU
     }
   }, [user, form]);
 
+  /**
+   * Handles the form submission for updating a user.
+   * @param {UserFormValues} values - The validated form values.
+   */
   async function onSubmit(values: UserFormValues) {
     try {
       const updatedUser = { ...user, ...values };
@@ -80,7 +100,7 @@ export function EditUserDialog({ isOpen, setIsOpen, user, onUserUpdated }: EditU
         title: "User Updated",
         description: `User ${values.name} has been successfully updated.`,
       });
-      setIsOpen(false);
+      setIsOpen(false); // Close the dialog on success
     } catch (error) {
       toast({
         title: "Error",
@@ -121,6 +141,7 @@ export function EditUserDialog({ isOpen, setIsOpen, user, onUserUpdated }: EditU
                   <FormItem>
                     <FormLabel>{t('admin_page.form_email')}</FormLabel>
                     <FormControl>
+                      {/* Email is disabled because changing it in Firebase Auth is a sensitive operation */}
                       <Input placeholder={t('admin_page.form_email_placeholder')} {...field} disabled />
                     </FormControl>
                      <FormMessage />

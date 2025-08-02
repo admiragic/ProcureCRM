@@ -26,7 +26,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save, CalendarIcon } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import type { Client } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -34,12 +33,19 @@ import { addOpportunity } from "@/services/opportunityService";
 import { useRouter } from "next/navigation";
 import { useData } from "@/context/data-context";
 
+/**
+ * A form for creating or editing a sales opportunity.
+ * It uses react-hook-form and Zod for validation.
+ * @returns {React.ReactElement} The rendered opportunity form.
+ */
 export function OpportunityForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
+  // Fetching clients from DataContext to populate the client dropdown.
   const { clients } = useData();
 
+  // Zod schema for form validation.
   const opportunityFormSchema = z.object({
     clientId: z.string().min(1, t('opportunity_form.client_required')),
     stage: z.enum(["lead", "prospecting", "proposal", "negotiation", "won", "lost"]),
@@ -51,6 +57,7 @@ export function OpportunityForm() {
   
   type OpportunityFormValues = z.infer<typeof opportunityFormSchema>;
 
+  // Initialize react-hook-form.
   const form = useForm<OpportunityFormValues>({
     resolver: zodResolver(opportunityFormSchema),
     defaultValues: {
@@ -60,11 +67,16 @@ export function OpportunityForm() {
     },
   });
 
+  /**
+   * Handles the form submission.
+   * It formats the data and calls the `addOpportunity` service.
+   * @param {OpportunityFormValues} values - The validated form values.
+   */
   async function onSubmit(values: OpportunityFormValues) {
     try {
       await addOpportunity({
         ...values,
-        closingDate: format(values.closingDate, 'yyyy-MM-dd')
+        closingDate: format(values.closingDate, 'yyyy-MM-dd') // Format date for DB
       });
       toast({
           title: t('opportunity_form.toast_success_title'),

@@ -9,11 +9,17 @@ import { Home, Users, Briefcase, CheckSquare, BrainCircuit, ClipboardList, Shiel
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/context/auth-context';
 
+/**
+ * The main sidebar component for application navigation.
+ * It displays navigation links based on the user's role.
+ * @returns {React.ReactElement} The rendered sidebar component.
+ */
 export function AppSidebar() {
   const pathname = usePathname();
   const { t } = useLanguage();
   const { user } = useAuth();
 
+  // Define the base menu items available to all users.
   const menuItems = [
     { href: '/', label: t('sidebar.dashboard'), icon: Home },
     { href: '/clients', label: t('sidebar.clients'), icon: Users },
@@ -23,6 +29,7 @@ export function AppSidebar() {
     { href: '/ai-tools/email-generator', label: t('sidebar.ai_email'), icon: BrainCircuit },
   ];
 
+  // Conditionally add the 'Admin' link if the user has the 'admin' role.
   if (user?.role === 'admin') {
     menuItems.push({ href: '/admin', label: t('sidebar.admin'), icon: Shield });
   }
@@ -38,6 +45,7 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
+                // The button is marked as active if its href matches the current pathname.
                 isActive={pathname === item.href}
                 tooltip={{ children: item.label, side: 'right' }}
               >

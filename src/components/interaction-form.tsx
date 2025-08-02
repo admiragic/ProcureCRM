@@ -26,17 +26,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Save } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { addInteraction } from "@/services/interactionService";
-import type { Client } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useData } from "@/context/data-context";
 
+/**
+ * A form for logging a new client interaction.
+ * It uses react-hook-form and Zod for validation and state management.
+ * @returns {React.ReactElement} The rendered interaction form.
+ */
 export function InteractionForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const router = useRouter();
+  // Fetching clients from DataContext to populate the client dropdown.
   const { clients } = useData();
 
+  // Zod schema for form validation.
   const interactionFormSchema = z.object({
     clientId: z.string().min(1, t('interaction_form.client_required')),
     type: z.enum(["call", "email", "meeting", "demo"]),
@@ -46,6 +52,7 @@ export function InteractionForm() {
   
   type InteractionFormValues = z.infer<typeof interactionFormSchema>;
 
+  // Initialize react-hook-form.
   const form = useForm<InteractionFormValues>({
     resolver: zodResolver(interactionFormSchema),
     defaultValues: {
@@ -56,6 +63,11 @@ export function InteractionForm() {
     },
   });
 
+  /**
+   * Handles the form submission.
+   * It calls the `addInteraction` service, shows a toast, and redirects on success.
+   * @param {InteractionFormValues} values - The validated form values.
+   */
   async function onSubmit(values: InteractionFormValues) {
     try {
         await addInteraction(values);

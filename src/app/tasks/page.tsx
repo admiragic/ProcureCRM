@@ -14,12 +14,14 @@ import type { Task } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useData } from "@/context/data-context";
 
+// A map to associate a Lucide icon with each task status.
 const statusIcons: Record<Task['status'], React.ElementType> = {
     planned: CircleHelp,
     open: Circle,
     closed: CheckCircle,
 };
 
+// A map to associate a text color with each task status for visual cues.
 const statusColors: Record<Task['status'], string> = {
     planned: "text-amber-500",
     open: "text-blue-500",
@@ -27,14 +29,28 @@ const statusColors: Record<Task['status'], string> = {
 };
 
 
+/**
+ * The main page for displaying and managing tasks.
+ * It features filtering, task completion, and deletion functionalities.
+ * @returns {React.ReactElement} The rendered tasks page.
+ */
 export default function TasksPage() {
     const { t } = useLanguage();
+    // Using the useData hook to get tasks and a function to update them.
     const { tasks, setTasks } = useData();
+    // State for filtering tasks by status.
     const [filter, setFilter] = useState<'all' | Task['status']>('all');
 
+    /**
+     * Handles toggling the completion status of a task.
+     * It updates the status in the database and then optimistically updates the local state.
+     * @param {string} taskId - The ID of the task to update.
+     * @param {Task['status']} currentStatus - The current status of the task.
+     */
     const handleTaskCompletion = async (taskId: string, currentStatus: Task['status']) => {
         const newStatus = currentStatus === 'closed' ? 'open' : 'closed';
         await updateTaskStatus(taskId, newStatus);
+        // Optimistic UI update for a smoother user experience.
         setTasks(currentTasks =>
             currentTasks.map(task =>
                 task.id === taskId ? { ...task, status: newStatus } : task
@@ -42,17 +58,29 @@ export default function TasksPage() {
         );
     };
 
+    /**
+     * Handles the deletion of a task.
+     * @param {string} taskId - The ID of the task to delete.
+     */
     const handleDelete = async (taskId: string) => {
+        // Placeholder alert, should be replaced with a confirmation dialog in a real app.
         alert(`Deleting task ${taskId}`);
         await deleteTask(taskId);
         setTasks(currentTasks => currentTasks.filter(task => task.id !== taskId));
     };
     
+    /**
+     * Memoized calculation to filter tasks based on the selected filter.
+     * This avoids re-calculating on every render unless `tasks` or `filter` changes.
+     */
     const filteredTasks = useMemo(() => {
         if (filter === 'all') return tasks;
         return tasks.filter(task => task.status === filter);
     }, [tasks, filter]);
 
+    /**
+     * Memoized calculation for the total estimated hours of the filtered tasks.
+     */
     const totalHours = useMemo(() => {
         return filteredTasks.reduce((acc, task) => acc + task.timeEstimate, 0);
     }, [filteredTasks]);
@@ -68,6 +96,7 @@ export default function TasksPage() {
         </Button>
       </PageHeader>
        <Card>
+        {/* Header with filter buttons */}
         <CardHeader className="border-b">
             <div className="flex items-center gap-2">
                 <Button variant={filter === 'all' ? 'default' : 'ghost'} size="sm" onClick={() => setFilter('all')}>
@@ -88,8 +117,10 @@ export default function TasksPage() {
             </div>
         </CardHeader>
         <CardContent className="p-0">
+          {/* List of tasks */}
           <ul className="divide-y divide-border">
             {filteredTasks
+              // Sort tasks by due date
               .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
               .map(task => {
                 const dueDate = parseISO(task.dueDate);
@@ -113,6 +144,7 @@ export default function TasksPage() {
                       <Calendar className="h-4 w-4" />
                       {format(dueDate, "MMM dd, yyyy")}
                     </div>
+                    {/* Dropdown menu for task actions */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
@@ -133,6 +165,7 @@ export default function TasksPage() {
               })}
           </ul>
         </CardContent>
+        {/* Footer displaying total estimated hours */}
         <CardFooter className="justify-end font-bold p-4 border-t">
             {t('task_form.total_time')}: {totalHours}h
         </CardFooter>

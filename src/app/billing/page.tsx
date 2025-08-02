@@ -7,6 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 
+/**
+ * The billing page component.
+ * It displays the user's current subscription plan and provides options to manage it.
+ * @returns {React.ReactElement} The rendered billing page.
+ */
 export default function BillingPage() {
   const { t } = useLanguage();
 
