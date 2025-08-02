@@ -35,8 +35,10 @@ export default function LoginPage() {
       // onAuthStateChanged in AuthProvider will handle setting the user state
       // and the useEffect above will handle redirection.
     } catch (err: any) {
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-email' || err.code === 'auth/configuration-not-found') {
-        setError('Neispravan email ili lozinka, ili je došlo do problema s konfiguracijom.');
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-email') {
+        setError('Neispravan email ili lozinka.');
+      } else if (err.code === 'auth/configuration-not-found') {
+        setError('Problem s konfiguracijom Firebasea. Molimo provjerite `src/lib/firebase.ts`.');
       } else {
         setError('Došlo je do pogreške prilikom prijave.');
       }
