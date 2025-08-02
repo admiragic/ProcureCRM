@@ -32,7 +32,7 @@ export function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, pathname, router, isClient]);
   
-  if (!isClient || loading) {
+  if (loading) {
     return (
        <div className="flex items-center justify-center min-h-screen">
            Loading...
