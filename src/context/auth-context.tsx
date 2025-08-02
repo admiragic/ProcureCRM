@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, getDocs, collection, setDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, setDoc, query, where } from 'firebase/firestore';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase'; 
@@ -48,7 +48,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
   }, []);
 
+  const seedAdminUser = useCallback(async () => {
+    const adminEmail = 'admin@procurecrm.com';
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where("email", "==", adminEmail));
+    
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        console.log("Admin user not found, creating one...");
+        try {
+            const adminPassword = 'adminpassword123'; // Use a secure, generated password in a real app
+            const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+            const uid = userCredential.user.uid;
+
+            await setDoc(doc(db, 'users', uid), {
+                username: 'admin',
+                name: 'Administrator',
+                email: adminEmail,
+                role: 'admin',
+            });
+            console.log("Admin user created successfully.");
+        } catch (error: any) {
+            // It's possible the user exists in Auth but not in Firestore, or password is not strong enough
+            if (error.code !== 'auth/email-already-in-use') {
+                 console.error("Error creating admin user:", error);
+            }
+        }
+    } else {
+        console.log("Admin user already exists.");
+    }
+  }, []);
+
   useEffect(() => {
+    seedAdminUser();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userData = await fetchUserDocument(firebaseUser);
@@ -60,12 +94,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [fetchUserDocument]);
+  }, [fetchUserDocument, seedAdminUser]);
   
   const login = async (email: string, pass: string) => {
-    // The login logic is back in the context
     await signInWithEmailAndPassword(auth, email, pass);
-    // onAuthStateChanged will then handle setting the user and redirecting
   };
 
   const logout = async () => {
