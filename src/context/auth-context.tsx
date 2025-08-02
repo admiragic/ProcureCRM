@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, signOut, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateEmail, deleteUser as deleteFirebaseUser } from 'firebase/auth';
 import { ref, get, set, remove, update } from 'firebase/database';
 import type { User } from '@/lib/users';
@@ -16,9 +16,6 @@ type AuthContextType = {
   addUser: (user: User) => Promise<void>;
   updateUser: (user: User) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
-  getUsers: () => Promise<User[]>;
-  users: User[];
-  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,8 +24,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  // We add this state to the provider to allow mutations from components
-  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -117,21 +112,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const getUsers = useCallback(async (): Promise<User[]> => {
-    const usersRef = ref(db, 'users');
-    const snapshot = await get(usersRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        const userList = Object.keys(data).map(key => ({ id: key, ...data[key] } as User));
-        setUsers(userList);
-        return userList;
-    }
-    setUsers([]);
-    return [];
-  }, []);
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers, users, setUsers, updateUser, deleteUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, addUser, updateUser, deleteUser }}>
       {children}
     </AuthContext.Provider>
   );

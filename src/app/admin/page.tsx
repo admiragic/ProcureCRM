@@ -63,18 +63,14 @@ const downloadCSV = (csvString: string, filename: string) => {
 
 
 export default function AdminPage() {
-  const { getUsers, users, setUsers, deleteUser } = useAuth();
+  const { deleteUser } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { clients, interactions, opportunities, tasks, loading } = useData();
+  const { clients, interactions, opportunities, tasks, users, setUsers, loading } = useData();
 
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
-
-  useEffect(() => {
-    getUsers();
-  }, [getUsers]);
 
   const handleEditUser = (user: User) => {
     setUserToEdit(user);
@@ -215,7 +211,7 @@ export default function AdminPage() {
           </TabsList>
           
           <TabsContent value="add-user" className="mt-6">
-            <AddUserForm onUserAdded={(newUser) => setUsers(prev => [...prev, newUser])} />
+            <AddUserForm onUserAdded={() => { /* Data will be refreshed by onValue listener */ }} />
           </TabsContent>
           
           <TabsContent value="export" className="mt-6">
