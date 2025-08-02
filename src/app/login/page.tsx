@@ -9,15 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('zoran@temporis.hr');
   const [password, setPassword] = useState('shaban$$');
   const [error, setError] = useState('');
   const router = useRouter();
-  const { login, user, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
+    // Redirect if user is already logged in
     if (!loading && user) {
       router.push('/');
     }
@@ -27,11 +30,13 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setError('');
     try {
-      await login(email, password);
-      // Učinak useEffect će se pobrinuti za preusmjeravanje
+      // Logic is moved here from the context
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged in AuthProvider will handle setting the user state
+      // and the useEffect above will handle redirection.
     } catch (err: any) {
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-email') {
-        setError('Neispravan email ili lozinka.');
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-email' || err.code === 'auth/configuration-not-found') {
+        setError('Neispravan email ili lozinka, ili je došlo do problema s konfiguracijom.');
       } else {
         setError('Došlo je do pogreške prilikom prijave.');
       }
@@ -39,7 +44,8 @@ export default function LoginPage() {
     }
   };
 
-  if (loading || (!loading && user)) {
+  // Show a loading state while checking auth status
+  if (loading || user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             Učitavanje...

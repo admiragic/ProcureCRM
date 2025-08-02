@@ -1,55 +1,55 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getFirebaseAuth, getDb } from '@/lib/firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, User as FirebaseUser } from 'firebase/auth';
-import { doc, setDoc, getDoc, getDocs, collection } from 'firebase/firestore';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { getAuth, onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
+import { doc, getDoc, getDocs, collection, getFirestore } from 'firebase/firestore';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
-
+import { app } from '@/lib/firebase'; // Import app
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   addUser: (user: User) => Promise<void>;
   getUsers: () => Promise<User[]>;
+  fetchUserDocument: (firebaseUser: FirebaseUser) => Promise<User | null>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const fetchUserDocument = async (firebaseUser: FirebaseUser): Promise<User | null> => {
-    if (!firebaseUser) return null;
-    try {
-        const db = getDb();
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-            return { id: userDoc.id, ...userDoc.data() } as User;
-        }
-        console.warn("No user document found for uid:", firebaseUser.uid);
-        return {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            name: firebaseUser.displayName || 'Unnamed User',
-            role: 'user',
-            username: firebaseUser.email || ''
-        };
-    } catch (error) {
-        console.error("Error fetching user document:", error);
-        return null;
-    }
-}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const fetchUserDocument = useCallback(async (firebaseUser: FirebaseUser): Promise<User | null> => {
+      if (!firebaseUser) return null;
+      try {
+          const db = getFirestore(app);
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+              return { id: userDoc.id, ...userDoc.data() } as User;
+          }
+          console.warn("No user document found for uid:", firebaseUser.uid);
+          // Create a default user object if document doesn't exist
+          return {
+              id: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              name: firebaseUser.displayName || 'Unnamed User',
+              role: 'user',
+              username: firebaseUser.email || ''
+          };
+      } catch (error) {
+          console.error("Error fetching user document:", error);
+          return null;
+      }
+  }, []);
+
   useEffect(() => {
-    const auth = getFirebaseAuth();
+    const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userData = await fetchUserDocument(firebaseUser);
@@ -61,27 +61,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [fetchUserDocument]);
 
-  const login = async (email: string, pass: string) => {
-    const auth = getFirebaseAuth();
-    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    const userData = await fetchUserDocument(userCredential.user);
-    setUser(userData);
-    router.push('/');
-  };
 
   const logout = async () => {
-    const auth = getFirebaseAuth();
+    const auth = getAuth(app);
     await signOut(auth);
-    setUser(null);
     router.push('/login');
   };
 
   const addUser = async (newUser: User) => {
-    const auth = getFirebaseAuth();
-    const db = getDb();
+    const auth = getAuth(app);
+    const db = getFirestore(app);
     if (!newUser.password) throw new Error("Password is required for new user");
+    // This part of creating user is not ideal inside the context, but we keep it for now.
+    // In a real app, this should be a backend function.
+    const { createUserWithEmailAndPassword } = await import('firebase/auth');
     const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
     const uid = userCredential.user.uid;
     await setDoc(doc(db, 'users', uid), {
@@ -93,13 +88,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getUsers = async (): Promise<User[]> => {
-    const db = getDb();
+    const db = getFirestore(app);
     const querySnapshot = await getDocs(collection(db, "users"));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+    return querySnapshot.docs.map(d => ({ id: d.id, ...d.data() } as User));
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers }}>
+    <AuthContext.Provider value={{ user, loading, logout, addUser, getUsers, fetchUserDocument }}>
       {children}
     </AuthContext.Provider>
   );
