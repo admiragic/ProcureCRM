@@ -1,53 +1,42 @@
 
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export function AppContent({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading } = useAuth();
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (loading || !isClient) return;
+    if (loading) return; // Ne radi ništa dok se ne učita status
 
     const isAuthPage = pathname === '/login';
 
     if (!user && !isAuthPage) {
       router.push('/login');
     }
-
     if (user && isAuthPage) {
       router.push('/');
     }
-  }, [user, loading, pathname, router, isClient]);
-  
+  }, [user, loading, pathname, router]);
+
   if (loading) {
     return (
-       <div className="flex items-center justify-center min-h-screen">
-           Loading...
-       </div>
-   );
-  }
-
-  const isAuthPage = pathname === '/login';
-  
-  if (isAuthPage) {
-    return <>{user ? null : children}</>;
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {
-    return null;
+    return <>{children}</>;
   }
 
   return (
