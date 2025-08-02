@@ -11,8 +11,8 @@ import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@procurerm.com');
+  const [password, setPassword] = useState('shaban$$');
   const [error, setError] = useState('');
   const router = useRouter();
   const { login } = useAuth();
