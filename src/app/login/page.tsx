@@ -18,20 +18,22 @@ export default function LoginPage() {
   const [email, setEmail] = useState('zoran@temporis.hr');
   const [password, setPassword] = useState('shaban$$');
   const [error, setError] = useState('');
+  const [loading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
     // Redirect if user is already logged in
-    if (!loading && user) {
+    if (!authLoading && user) {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
 
   const handleLogin = async () => {
     setError('');
+    setIsLoading(true);
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -45,6 +47,7 @@ export default function LoginPage() {
 
       if (!response.ok) {
         setError(data.error || 'An error occurred.');
+        setIsLoading(false);
         return;
       }
 
@@ -53,11 +56,13 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error(err);
       setError('Failed to log in. Please check the console.');
+    } finally {
+        setIsLoading(false);
     }
   };
 
   // Show a loading state while checking auth status
-  if (loading || user) {
+  if (authLoading || user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             {t('login_page.loading')}
@@ -86,6 +91,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
             </div>
             <div className="grid gap-2">
@@ -96,11 +102,12 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               />
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
-            <Button onClick={handleLogin} className="w-full">
-              {t('login_page.login_button')}
+            <Button onClick={handleLogin} className="w-full" disabled={loading}>
+              {loading ? t('login_page.loading') : t('login_page.login_button')}
             </Button>
             <div className="mt-4 flex justify-center">
                 <LanguageSwitcher />

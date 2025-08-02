@@ -8,7 +8,7 @@ import {app} from '@/lib/firebase';
 // In a production environment, you should use a more secure way to handle passwords,
 // such as storing hashed passwords and comparing them.
 // We are using client SDK here on the server to verify password which is not ideal.
-async function verifyUserPassword(email, password) {
+async function verifyUserPassword(email: string, password: string): Promise<void> {
   const clientAuth = getAuth(app);
   await signInWithEmailAndPassword(clientAuth, email, password);
 }
@@ -24,13 +24,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get user by email
+    // Get user by email from Admin SDK
     const userRecord = await adminAuth.getUserByEmail(email);
 
-    // This is a workaround as Admin SDK does not provide a way to verify password directly.
+    // Verify password using the workaround function
     await verifyUserPassword(email, password);
 
-    // Create a custom token
+    // If password is correct, create a custom token
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
 
     return NextResponse.json({token: customToken});
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     let errorMessage = 'Internal Server Error';
     let statusCode = 500;
 
+    // Handle specific Firebase auth errors
     if (
       error.code === 'auth/user-not-found' ||
       error.code === 'auth/invalid-credential' ||
@@ -49,6 +50,9 @@ export async function POST(request: Request) {
     } else if (error.code === 'auth/too-many-requests') {
       errorMessage = 'Too many login attempts. Please try again later.';
       statusCode = 429;
+    } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+        statusCode = 400;
     }
 
     return NextResponse.json({error: errorMessage}, {status: statusCode});
