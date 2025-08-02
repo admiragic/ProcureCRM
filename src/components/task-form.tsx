@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import React, { useState, useRef, useEffect } from "react";
 import type { Client, Task } from "@/lib/types";
 import { useRouter } from "next/navigation";
-import { getStorageInstance } from "@/lib/firebase";
+import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export function TaskForm() {
@@ -79,7 +79,6 @@ export function TaskForm() {
 
   async function onSubmit(values: TaskFormValues) {
     try {
-      const storage = getStorageInstance();
       const fileURLs = await Promise.all(
         files.map(async (file) => {
           const storageRef = ref(storage, `tasks/${Date.now()}_${file.name}`);

@@ -13,11 +13,15 @@ const firebaseConfig = {
   appId: "1:289531756755:web:6eed801e73589d4fd11426",
 };
 
-// Inicijaliziraj Firebase
-const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+let app: FirebaseApp;
+if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+} else {
+    app = getApp();
+}
 
-const getDb = (): Firestore => getFirestore(app);
-const getFirebaseAuth = (): Auth => getAuth(app);
-const getStorageInstance = (): FirebaseStorage => getStorage(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-export { app, getDb, getFirebaseAuth, getStorageInstance };
+export { db, auth, storage };
