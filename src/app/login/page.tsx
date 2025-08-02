@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/auth-context';
 import Logo from '@/components/logo';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useLanguage } from '@/context/language-context';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -33,19 +33,26 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setError('');
     try {
-      // Logic is moved here from the context
-      await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged in AuthProvider will handle setting the user state
-      // and the useEffect above will handle redirection.
-    } catch (err: any) {
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-email') {
-        setError(t('login_page.error_invalid_credentials'));
-      } else if (err.code === 'auth/configuration-not-found') {
-        setError(t('login_page.error_config_problem'));
-      } else {
-        setError(t('login_page.error_generic'));
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'An error occurred.');
+        return;
       }
+
+      await signInWithCustomToken(auth, data.token);
+      // onAuthStateChanged in AuthProvider will handle the rest
+    } catch (err: any) {
       console.error(err);
+      setError('Failed to log in. Please check the console.');
     }
   };
 
