@@ -21,7 +21,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const fetchUserDocument = async (firebaseUser: FirebaseUser): Promise<User | null> => {
     if (!firebaseUser) return null;
     try {
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
             return { id: userDoc.id, ...userDoc.data() } as User;
         }
@@ -53,16 +54,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, pass: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    const firebaseUser = userCredential.user;
-    if (firebaseUser) {
-        const userData = await fetchUserDocument(firebaseUser);
-        setUser(userData);
-    }
+    // onAuthStateChanged će se automatski pokrenuti i postaviti korisnika
   };
 
   const logout = async () => {
     await signOut(auth);
-    setUser(null);
+    // onAuthStateChanged će se automatski pokrenuti i postaviti korisnika na null
   };
 
   const addUser = async (newUser: User) => {

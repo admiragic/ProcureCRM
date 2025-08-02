@@ -1,7 +1,6 @@
 
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
@@ -11,34 +10,22 @@ import { useEffect } from 'react';
 
 export function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const pathname = usePathname();
   const router = useRouter();
-
-  useEffect(() => {
-    if (loading) return; // Ne radi ništa dok se ne učita status
-
-    const isAuthPage = pathname === '/login';
-
-    if (!user && !isAuthPage) {
-      router.push('/login');
-    }
-    if (user && isAuthPage) {
-      router.push('/');
-    }
-  }, [user, loading, pathname, router]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Loading...
+        Učitavanje...
       </div>
     );
   }
 
   if (!user) {
+    // Ako korisnik nije prijavljen, prikazujemo samo djecu (npr. stranicu za prijavu)
     return <>{children}</>;
   }
 
+  // Ako je korisnik prijavljen, prikazujemo puni izgled aplikacije
   return (
     <SidebarProvider>
       <AppSidebar />

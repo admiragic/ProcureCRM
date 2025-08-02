@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,17 +15,37 @@ export default function LoginPage() {
   const [password, setPassword] = useState('shaban$$');
   const [error, setError] = useState('');
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
 
   const handleLogin = async () => {
     setError('');
     try {
       await login(email, password);
-      router.push('/');
+      // Učinak useEffect će se pobrinuti za preusmjeravanje
     } catch (err: any) {
-      setError(err.message);
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('Neispravan email ili lozinka.');
+      } else {
+        setError('Došlo je do pogreške prilikom prijave.');
+      }
+      console.error(err);
     }
   };
+
+  if (loading || (!loading && user)) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            Učitavanje...
+        </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -34,8 +54,8 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
             <Logo />
             </div>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your email and password to access the dashboard.</CardDescription>
+          <CardTitle className="text-2xl">Prijava</CardTitle>
+          <CardDescription>Unesite svoj email i lozinku za pristup.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -51,7 +71,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Lozinka</Label>
               <Input
                 id="password"
                 type="password"
@@ -62,7 +82,7 @@ export default function LoginPage() {
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
             <Button onClick={handleLogin} className="w-full">
-              Login
+              Prijavi se
             </Button>
           </div>
         </CardContent>
