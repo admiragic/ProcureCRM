@@ -11,7 +11,6 @@ import { auth, db } from '@/lib/firebase';
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  isInitialized: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   addUser: (user: User) => Promise<void>;
@@ -23,7 +22,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
 
   const seedAdminUser = useCallback(async () => {
@@ -55,23 +53,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     seedAdminUser();
 
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const isKnownAdmin = firebaseUser.email === 'zoran@temporis.hr';
+        // Fetch user role from the database
+        const userRef = ref(db, `users/${firebaseUser.uid}`);
+        const snapshot = await get(userRef);
+
+        let userRole = 'user'; // Default role
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            userRole = userData.role || 'user';
+        } else if (firebaseUser.email === 'zoran@temporis.hr') {
+            // This is a fallback in case the DB entry hasn't been written yet for the admin
+            userRole = 'admin';
+        }
+        
         const userDoc: User = {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
-            name: firebaseUser.displayName || (isKnownAdmin ? 'Zoran Admin' : 'Korisnik'),
+            name: firebaseUser.displayName || snapshot.val()?.name || (userRole === 'admin' ? 'Zoran Admin' : 'Korisnik'),
             username: firebaseUser.email || '',
-            role: isKnownAdmin ? 'admin' : 'user'
+            role: userRole as 'admin' | 'user',
         };
         setUser(userDoc);
       } else {
         setUser(null);
       }
       setLoading(false);
-      setIsInitialized(true);
     });
 
     return () => unsubscribe();
@@ -118,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isInitialized, login, logout, addUser, getUsers }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, addUser, getUsers }}>
       {children}
     </AuthContext.Provider>
   );

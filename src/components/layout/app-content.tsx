@@ -10,18 +10,19 @@ import { useEffect } from 'react';
 import { useLanguage } from '@/context/language-context';
 
 export function AppContent({ children }: { children: React.ReactNode }) {
-  const { user, loading, isInitialized } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (isInitialized && !user) {
+    // Redirect if loading is done and there's no user
+    if (!loading && !user) {
       router.push('/login');
     }
-  }, [user, isInitialized, router]);
+  }, [user, loading, router]);
 
-  // Wait for Firebase to initialize before rendering anything
-  if (!isInitialized) {
+  // While checking auth state, show a loading screen
+  if (loading) {
      return (
       <div className="flex items-center justify-center min-h-screen">
         {t('login_page.loading')}
@@ -29,7 +30,7 @@ export function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not logged in (and initialized), show the login page
+  // If not logged in, show the login page children (which is the login page itself)
   if (!user) {
     return <>{children}</>;
   }
