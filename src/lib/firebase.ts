@@ -13,24 +13,10 @@ const firebaseConfig = {
   appId: "1:289531756755:web:6eed801e73589d4fd11426",
 };
 
-// Singleton pattern to ensure single instance of Firebase app and services
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
-let storage: FirebaseStorage;
-
-function initializeFirebase() {
-    if (!getApps().length) {
-        app = initializeApp(firebaseConfig);
-    } else {
-        app = getApp();
-    }
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-}
-
-// Initialize on first load
-initializeFirebase();
+// Initialize Firebase
+const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const db: Firestore = getFirestore(app);
+const auth: Auth = getAuth(app);
+const storage: FirebaseStorage = getStorage(app);
 
 export { app, db, auth, storage };

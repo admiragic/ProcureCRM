@@ -1,5 +1,5 @@
 
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Task, Client } from '@/lib/types';
 
