@@ -22,6 +22,10 @@ export async function addInteractionAction(values: z.infer<typeof interactionFor
         };
     }
 
+    if (!db) {
+        return { error: 'Database not configured' };
+    }
+
     const interactionsRef = ref(db, 'interactions');
     const newInteractionRef = push(interactionsRef);
 

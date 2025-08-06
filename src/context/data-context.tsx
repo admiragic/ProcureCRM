@@ -57,7 +57,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
    * When the user logs out, it cleans up the listeners.
    */
   useEffect(() => {
-    if (user) {
+    if (user && db) {
       setLoading(true);
       
       const refs = [

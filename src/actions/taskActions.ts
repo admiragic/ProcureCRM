@@ -26,6 +26,10 @@ export async function addTaskAction(values: z.infer<typeof taskFormSchema>) {
             errors: validatedFields.error.flatten().fieldErrors,
         };
     }
+    
+    if (!db) {
+        return { error: 'Database not configured' };
+    }
 
     const newTaskRef = push(ref(db, 'tasks'));
     try {
@@ -40,6 +44,10 @@ export async function addTaskAction(values: z.infer<typeof taskFormSchema>) {
 export async function updateTaskStatusAction(taskId: string, status: Task['status']) {
     if (!taskId) return { error: "Task ID is missing" };
 
+    if (!db) {
+        return { error: 'Database not configured' };
+    }
+
     const taskRef = ref(db, `tasks/${taskId}`);
     try {
         await update(taskRef, { status });
@@ -52,6 +60,10 @@ export async function updateTaskStatusAction(taskId: string, status: Task['statu
 
 export async function deleteTaskAction(taskId: string) {
     if (!taskId) return { error: "Task ID is missing" };
+    
+    if (!db) {
+        return { error: 'Database not configured' };
+    }
 
     const taskRef = ref(db, `tasks/${taskId}`);
     try {

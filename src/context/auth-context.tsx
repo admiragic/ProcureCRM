@@ -56,6 +56,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // If a user is authenticated, fetch their details from the database.
+        if (!db) {
+            setUser(null);
+            setLoading(false);
+            return;
+        }
         const userRef = ref(db, `users/${firebaseUser.uid}`);
         const snapshot = await get(userRef).catch(() => null);
 
@@ -93,6 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * @param {string} pass - The user's password.
    */
   const login = async (email: string, pass: string) => {
+    if (!auth) throw new Error("Auth not initialized");
     await signInWithEmailAndPassword(auth, email, pass);
   };
 
@@ -100,6 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * Signs out the current user and redirects to the login page.
    */
   const logout = async () => {
+    if (!auth) throw new Error("Auth not initialized");
     await signOut(auth);
     router.push('/login');
   };
@@ -111,6 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * @param {Omit<User, 'id'>} newUser - The user object containing additional details.
    */
   const addUser = async (email: string, password: string, newUser: Omit<User, 'id'>) => {
+    if (!auth || !db) throw new Error("Firebase not initialized");
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
     
@@ -129,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * @param {User} updatedUser - The user object with updated information.
    */
   const updateUser = async (updatedUser: User) => {
+    if (!db) throw new Error("DB not initialized");
     const userRef = ref(db, `users/${updatedUser.id}`);
     await update(userRef, {
         name: updatedUser.name,
@@ -150,6 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * @param {string} userId - The ID of the user to delete from the database.
    */
   const deleteUser = async (userId: string) => {
+    if (!db) throw new Error("DB not initialized");
     const userRef = ref(db, `users/${userId}`);
     await remove(userRef);
     console.warn(`User ${userId} deleted from Realtime Database. Please delete the corresponding user from the Firebase Auth console to complete the process.`);
