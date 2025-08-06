@@ -37,83 +37,26 @@ let db: Database;
 let storage: FirebaseStorage;
 
 
-// A promise that resolves when Firebase is initialized.
-let initializationPromise: Promise<void> | null = null;
-
-/**
- * Initializes the Firebase app if it hasn't been already.
- * This function is idempotent and safe to call multiple times.
- */
-const initializeFirebase = () => {
-    if (initializationPromise) {
-        return initializationPromise;
-    }
-
-    initializationPromise = new Promise((resolve, reject) => {
-        if (!isFirebaseConfigValid) {
-            console.error("Firebase configuration is incomplete. Please check your environment variables.");
-            return reject(new Error("Firebase configuration is incomplete."));
-        }
-
-        if (getApps().length === 0) {
-            try {
-                firebaseApp = initializeApp(firebaseConfig);
-                auth = getAuth(firebaseApp);
-                db = getDatabase(firebaseApp);
-                storage = getStorage(firebaseApp);
-                console.log("Firebase initialized successfully.");
-                resolve();
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                reject(error);
-            }
-        } else {
-            firebaseApp = getApp();
-            auth = getAuth(firebaseApp);
-            db = getDatabase(firebaseApp);
-            storage = getStorage(firebaseApp);
-            resolve();
-        }
-    });
-
-    return initializationPromise;
-};
-
-
-/**
- * Safely gets the Firebase Auth instance, initializing the app if necessary.
- * @returns {Promise<Auth>} A promise that resolves with the Auth instance.
- */
-export const getAuthInstance = async (): Promise<Auth> => {
-    await initializeFirebase();
-    return auth;
-};
-
-/**
- * Safely gets the Firebase Realtime Database instance, initializing the app if necessary.
- * @returns {Promise<Database>} A promise that resolves with the Database instance.
- */
-export const getDbInstance = async (): Promise<Database> => {
-    await initializeFirebase();
-    return db;
-};
-
-/**
- * Safely gets the Firebase Storage instance, initializing the app if necessary.
- * @returns {Promise<FirebaseStorage>} A promise that resolves with the Storage instance.
- */
-export const getStorageInstance = async (): Promise<FirebaseStorage> => {
-    await initializeFirebase();
-    return storage;
-};
-
-// Direct exports for simpler server-side usage where async/await is straightforward.
-// This is mainly for server actions that can handle the async initialization implicitly.
-if (isFirebaseConfigValid) {
-    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getDatabase(app);
-    storage = getStorage(app);
+if (!isFirebaseConfigValid) {
+    console.error("Firebase configuration is incomplete. Please check your environment variables.");
 }
+
+if (getApps().length === 0 && isFirebaseConfigValid) {
+    try {
+        firebaseApp = initializeApp(firebaseConfig);
+        console.log("Firebase initialized successfully.");
+    } catch (error) {
+        console.error("Firebase initialization failed:", error);
+    }
+} else if (isFirebaseConfigValid) {
+    firebaseApp = getApp();
+}
+
+if (firebaseApp) {
+    auth = getAuth(firebaseApp);
+    db = getDatabase(firebaseApp);
+    storage = getStorage(firebaseApp);
+}
+
 
 export { db, auth, storage };

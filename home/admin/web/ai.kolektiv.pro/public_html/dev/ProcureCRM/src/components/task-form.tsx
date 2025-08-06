@@ -31,7 +31,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getStorageInstance } from "@/lib/firebase";
+import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useData } from "@/context/data-context";
 import { addTaskAction } from "@/actions/taskActions";
@@ -85,10 +85,7 @@ export function TaskForm() {
    */
   async function onSubmit(values: TaskFormValues) {
     
-    let storage;
-    try {
-      storage = await getStorageInstance();
-    } catch (error) {
+    if (!storage) {
        toast({
         title: "Error",
         description: "Storage is not configured. Cannot upload files.",
@@ -108,11 +105,15 @@ export function TaskForm() {
       );
       
       // Call the Server Action with the complete task data
-      await addTaskAction({ 
+      const result = await addTaskAction({ 
         ...values, 
         dueDate: format(values.dueDate, 'yyyy-MM-dd'),
         documents: fileURLs 
       });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
 
       toast({
           title: t('task_form.toast_success_title'),
@@ -122,10 +123,10 @@ export function TaskForm() {
       setFiles([]);
       form.reset();
       router.push('/tasks');
-    } catch(e) {
+    } catch(e: any) {
       toast({
         title: "Error",
-        description: "Failed to save task",
+        description: e.message || "Failed to save task",
         variant: "destructive"
       })
     }

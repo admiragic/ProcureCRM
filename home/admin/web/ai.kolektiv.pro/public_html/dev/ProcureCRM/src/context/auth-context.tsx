@@ -6,7 +6,7 @@ import { onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWith
 import { ref, get, set, remove, update } from 'firebase/database';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
-import { getAuthInstance, getDbInstance } from '@/lib/firebase'; 
+import { auth, db } from '@/lib/firebase'; 
 
 /**
  * Defines the shape of the authentication context.
@@ -48,52 +48,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * It sets the user object when a user logs in and clears it on logout.
    */
   useEffect(() => {
-    const initializeAuth = async () => {
-        try {
-            const auth = await getAuthInstance();
-            const db = await getDbInstance();
+    if (!auth) {
+        setLoading(false);
+        return;
+    }
 
-            const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-                if (firebaseUser) {
-                    const userRef = ref(db, `users/${firebaseUser.uid}`);
-                    const snapshot = await get(userRef).catch(() => null);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+            const userRef = ref(db, `users/${firebaseUser.uid}`);
+            const snapshot = await get(userRef).catch(() => null);
 
-                    if (snapshot?.exists()) {
-                        const userDoc: User = {
-                            id: firebaseUser.uid,
-                            email: firebaseUser.email || '',
-                            name: snapshot?.val()?.name || 'Korisnik',
-                            username: snapshot?.val()?.username || firebaseUser.email || '',
-                            role: snapshot?.val()?.role || 'user',
-                        };
-                        setUser(userDoc);
-                    } else {
-                        // User exists in Auth but not in DB, log them out.
-                        await signOut(auth);
-                        setUser(null);
-                    }
-                } else {
-                    setUser(null);
-                }
-                setLoading(false);
-            });
-            
-            return () => unsubscribe();
-        } catch (error) {
-            console.error("Firebase Auth initialization failed", error);
-            setLoading(false);
+            if (snapshot?.exists()) {
+                const userDoc: User = {
+                    id: firebaseUser.uid,
+                    email: firebaseUser.email || '',
+                    name: snapshot?.val()?.name || 'Korisnik',
+                    username: snapshot?.val()?.username || firebaseUser.email || '',
+                    role: snapshot?.val()?.role || 'user',
+                };
+                setUser(userDoc);
+            } else {
+                // User exists in Auth but not in DB, log them out.
+                await signOut(auth);
+                setUser(null);
+            }
+        } else {
             setUser(null);
         }
-    };
+        setLoading(false);
+    });
     
-    initializeAuth();
+    return () => unsubscribe();
   }, []);
   
   /**
    * Signs in a user with email and password.
    */
   const login = async (email: string, pass: string) => {
-    const auth = await getAuthInstance();
+    if (!auth) {
+        console.error("Firebase Auth is not initialized.");
+        throw new Error("Firebase Auth is not initialized.");
+    }
     await signInWithEmailAndPassword(auth, email, pass);
   };
 
@@ -101,7 +96,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * Signs out the current user and redirects to the login page.
    */
   const logout = async () => {
-    const auth = await getAuthInstance();
+     if (!auth) {
+        console.error("Firebase Auth is not initialized.");
+        return;
+    }
     await signOut(auth);
     router.push('/login');
   };
@@ -113,8 +111,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * @param {Omit<User, 'id'>} newUser - The user object containing additional details.
    */
   const addUser = async (email: string, password: string, newUser: Omit<User, 'id'>) => {
-    const auth = await getAuthInstance();
-    const db = await getDbInstance();
+     if (!auth || !db) {
+        console.error("Firebase Auth or DB is not initialized.");
+        return;
+    }
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
     
@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * @param {User} updatedUser - The user object with updated information.
    */
   const updateUser = async (updatedUser: User) => {
-    const db = await getDbInstance();
+    if (!db) return;
     const userRef = ref(db, `users/${updatedUser.id}`);
     await update(userRef, {
         name: updatedUser.name,
@@ -146,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * Deletes a user's record from the Realtime Database.
    */
   const deleteUser = async (userId: string) => {
-    const db = await getDbInstance();
+    if (!db) return;
     const userRef = ref(db, `users/${userId}`);
     await remove(userRef);
     console.warn(`User ${userId} deleted from Realtime Database. Please delete the corresponding user from the Firebase Auth console to complete the process.`);
