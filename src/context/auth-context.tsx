@@ -48,6 +48,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * It sets the user object when a user logs in and clears it on logout.
    */
   useEffect(() => {
+    // Ensure auth is initialized before setting up the listener
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // If a user is authenticated, fetch their details from the database.

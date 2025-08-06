@@ -20,17 +20,32 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-function getFirebaseApp(): FirebaseApp {
-    if (getApps().length === 0) {
-        return initializeApp(firebaseConfig);
-    } else {
-        return getApp();
-    }
+// Check if all required environment variables are present.
+const isFirebaseConfigValid =
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId &&
+  firebaseConfig.databaseURL;
+
+let app: FirebaseApp;
+let auth: Auth;
+let db: Database;
+let storage: FirebaseStorage;
+
+// Initialize Firebase only if the configuration is valid
+// This prevents errors during the build process if env vars are not set.
+if (isFirebaseConfigValid) {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getDatabase(app);
+    storage = getStorage(app);
+} else {
+    console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
 }
 
-const app = getFirebaseApp();
-const db = getDatabase(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
 
+// @ts-ignore
 export { db, auth, storage };
