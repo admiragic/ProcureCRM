@@ -1,8 +1,7 @@
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useAuth } from './auth-context';
+import { useAuth } from '@/context/auth-context';
 import { get, ref, onValue, off } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import type { Client, Interaction, Opportunity, Task } from '@/lib/types';

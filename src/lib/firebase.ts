@@ -1,4 +1,3 @@
-
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
  * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
