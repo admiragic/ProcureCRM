@@ -47,4 +47,3 @@ if (isFirebaseConfigValid && typeof window !== 'undefined') {
 
 // @ts-ignore
 export { db, auth, storage };
-
