@@ -33,16 +33,15 @@ let auth: Auth;
 let storage: FirebaseStorage;
 
 
-if (typeof window !== 'undefined' && getApps().length === 0 && firebaseConfig.projectId) {
-  app = initializeApp(firebaseConfig);
-  db = getDatabase(app);
-  auth = getAuth(app);
-  storage = getStorage(app);
-} else if (getApps().length > 0) {
-  app = getApp();
-  db = getDatabase(app);
-  auth = getAuth(app);
-  storage = getStorage(app);
+if (firebaseConfig.projectId) {
+    if (getApps().length === 0) {
+        app = initializeApp(firebaseConfig);
+    } else {
+        app = getApp();
+    }
+    db = getDatabase(app);
+    auth = getAuth(app);
+    storage = getStorage(app);
 }
 
 export { db, auth, storage };
