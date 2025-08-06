@@ -1,0 +1,168 @@
+
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { ref, get, set, remove, update } from 'firebase/database';
+import type { User } from '@/lib/users';
+import { useRouter } from 'next/navigation';
+import { auth, db } from '@/lib/firebase'; 
+
+/**
+ * Defines the shape of the authentication context.
+ * @property {User | null} user - The current authenticated user object, or null if not logged in.
+ * @property {boolean} loading - A boolean indicating if the authentication state is currently being determined.
+ * @property {(email: string, pass: string) => Promise<void>} login - Function to log in a user.
+ * @property {() => void} logout - Function to log out the current user.
+ * @property {(email: string, pass: string, user: Omit<User, 'id'>) => Promise<void>} addUser - Function to create a new user account.
+ * @property {(user: User) => Promise<void>} updateUser - Function to update a user's data in the database.
+ * @property {(userId: string) => Promise<void>} deleteUser - Function to delete a user's data from the database.
+ */
+type AuthContextType = {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, pass: string) => Promise<void>;
+  logout: () => void;
+  addUser: (email: string, password: string, newUser: Omit<User, 'id'>) => Promise<void>;
+  updateUser: (user: User) => Promise<void>;
+  deleteUser: (userId: string) => Promise<void>;
+};
+
+// Create the authentication context.
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/**
+ * The provider component for the authentication context.
+ * It manages the user's authentication state and provides auth-related functions to its children.
+ * @param {object} props - The component props.
+ * @param {ReactNode} props.children - The child components that will have access to the context.
+ * @returns {React.ReactElement} The rendered provider.
+ */
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  /**
+   * Effect to listen for changes in the Firebase authentication state.
+   * It sets the user object when a user logs in and clears it on logout.
+   */
+  useEffect(() => {
+    // Ensure auth is initialized before setting up the listener
+    if (auth) {
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser) {
+                const userRef = ref(db, `users/${firebaseUser.uid}`);
+                const snapshot = await get(userRef).catch(() => null);
+
+                if (snapshot?.exists()) {
+                    const userDoc: User = {
+                        id: firebaseUser.uid,
+                        email: firebaseUser.email || '',
+                        name: snapshot?.val()?.name || 'Korisnik',
+                        username: snapshot?.val()?.username || firebaseUser.email || '',
+                        role: snapshot?.val()?.role || 'user',
+                    };
+                    setUser(userDoc);
+                } else {
+                    await signOut(auth);
+                    setUser(null);
+                }
+            } else {
+                setUser(null);
+            }
+            setLoading(false);
+        });
+        
+        return () => unsubscribe();
+    } else {
+        // If auth is not ready, stop loading and set user to null.
+        setLoading(false);
+        setUser(null);
+    }
+  }, []);
+  
+  /**
+   * Signs in a user with email and password.
+   */
+  const login = async (email: string, pass: string) => {
+    if (!auth) {
+        throw new Error("Firebase Auth is not initialized.");
+    }
+    await signInWithEmailAndPassword(auth, email, pass);
+  };
+
+  /**
+   * Signs out the current user and redirects to the login page.
+   */
+  const logout = async () => {
+    if (auth) {
+        await signOut(auth);
+    }
+    router.push('/login');
+  };
+
+  /**
+   * Creates a new user in Firebase Authentication and adds their details to the Realtime Database.
+   * @param {string} email - The user's email for authentication.
+   * @param {string} password - The user's password for authentication.
+   * @param {Omit<User, 'id'>} newUser - The user object containing additional details.
+   */
+  const addUser = async (email: string, password: string, newUser: Omit<User, 'id'>) => {
+    if (!auth || !db) throw new Error("Firebase is not initialized.");
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
+    
+    const newUserRef = ref(db, `users/${uid}`);
+    await set(newUserRef, {
+      username: newUser.username,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    });
+  };
+
+  /**
+   * Updates a user's data in the Realtime Database.
+   * @param {User} updatedUser - The user object with updated information.
+   */
+  const updateUser = async (updatedUser: User) => {
+    if (!db) throw new Error("Firebase DB is not initialized.");
+    const userRef = ref(db, `users/${updatedUser.id}`);
+    await update(userRef, {
+        name: updatedUser.name,
+        username: updatedUser.username,
+        role: updatedUser.role,
+        email: updatedUser.email
+    });
+  };
+
+  /**
+   * Deletes a user's record from the Realtime Database.
+   */
+  const deleteUser = async (userId: string) => {
+    if (!db) throw new Error("Firebase DB is not initialized.");
+    const userRef = ref(db, `users/${userId}`);
+    await remove(userRef);
+    console.warn(`User ${userId} deleted from Realtime Database. Please delete the corresponding user from the Firebase Auth console to complete the process.`);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, logout, addUser, updateUser, deleteUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+/**
+ * A custom hook to easily access the authentication context.
+ * Throws an error if used outside of an AuthProvider.
+ * @returns {AuthContextType} The authentication context.
+ */
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
