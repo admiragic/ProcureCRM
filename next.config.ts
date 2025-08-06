@@ -1,7 +1,3 @@
-// Load environment variables from .env file
-import { config } from 'dotenv';
-config();
-
 /** @type {import('next').NextConfig} */
 import type {NextConfig} from 'next';
 

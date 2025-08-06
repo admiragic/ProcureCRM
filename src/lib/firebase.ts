@@ -1,3 +1,5 @@
+
+'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
  * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
@@ -25,13 +27,22 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase, creating a new app instance if one doesn't already exist.
-const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// Get instances of the Firebase services.
-const db: Database = getDatabase(app);
-const auth: Auth = getAuth(app);
-const storage: FirebaseStorage = getStorage(app);
+let app: FirebaseApp;
+let db: Database;
+let auth: Auth;
+let storage: FirebaseStorage;
 
 
-// Export the initialized services for use throughout the application.
-export { app, db, auth, storage };
+if (typeof window !== 'undefined' && getApps().length === 0 && firebaseConfig.projectId) {
+  app = initializeApp(firebaseConfig);
+  db = getDatabase(app);
+  auth = getAuth(app);
+  storage = getStorage(app);
+} else if (getApps().length > 0) {
+  app = getApp();
+  db = getDatabase(app);
+  auth = getAuth(app);
+  storage = getStorage(app);
+}
+
+export { db, auth, storage };
