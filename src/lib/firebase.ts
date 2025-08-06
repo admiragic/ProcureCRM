@@ -1,4 +1,3 @@
-
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
  * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
@@ -11,17 +10,18 @@ import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 /**
  * The Firebase configuration object for your project.
- * These keys are public and safe to expose on the client-side.
- * Security is enforced by Firebase Security Rules.
+ * These keys are read from environment variables to avoid exposing them in the source code.
+ * It is crucial to create a .env.local file in the root of your project and populate it
+ * with the corresponding values from your Firebase project settings.
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyAnAHY6pg-cHWCIkOipc_qKeZUYuYsuzQk",
-  authDomain: "procurecrm.firebaseapp.com",
-  projectId: "procurecrm",
-  storageBucket: "procurecrm.appspot.com",
-  messagingSenderId: "289531756755",
-  appId: "1:289531756755:web:6eed801e73589d4fd11426",
-  databaseURL: "https://procurecrm-default-rtdb.europe-west1.firebasedatabase.app"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
 // Initialize Firebase, creating a new app instance if one doesn't already exist.
