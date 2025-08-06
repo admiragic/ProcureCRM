@@ -32,6 +32,10 @@ const isFirebaseConfigValid =
   firebaseConfig.databaseURL;
 
 let firebaseApp: FirebaseApp;
+let auth: Auth;
+let db: Database;
+let storage: FirebaseStorage;
+
 
 // A promise that resolves when Firebase is initialized.
 let initializationPromise: Promise<void> | null = null;
@@ -54,6 +58,9 @@ const initializeFirebase = () => {
         if (getApps().length === 0) {
             try {
                 firebaseApp = initializeApp(firebaseConfig);
+                auth = getAuth(firebaseApp);
+                db = getDatabase(firebaseApp);
+                storage = getStorage(firebaseApp);
                 console.log("Firebase initialized successfully.");
                 resolve();
             } catch (error) {
@@ -62,6 +69,9 @@ const initializeFirebase = () => {
             }
         } else {
             firebaseApp = getApp();
+            auth = getAuth(firebaseApp);
+            db = getDatabase(firebaseApp);
+            storage = getStorage(firebaseApp);
             resolve();
         }
     });
@@ -76,7 +86,7 @@ const initializeFirebase = () => {
  */
 export const getAuthInstance = async (): Promise<Auth> => {
     await initializeFirebase();
-    return getAuth(firebaseApp);
+    return auth;
 };
 
 /**
@@ -85,7 +95,7 @@ export const getAuthInstance = async (): Promise<Auth> => {
  */
 export const getDbInstance = async (): Promise<Database> => {
     await initializeFirebase();
-    return getDatabase(firebaseApp);
+    return db;
 };
 
 /**
@@ -94,15 +104,11 @@ export const getDbInstance = async (): Promise<Database> => {
  */
 export const getStorageInstance = async (): Promise<FirebaseStorage> => {
     await initializeFirebase();
-    return getStorage(firebaseApp);
+    return storage;
 };
 
 // Direct exports for simpler server-side usage where async/await is straightforward.
-// Note: These might be undefined if initialization fails.
-let auth: Auth;
-let db: Database;
-let storage: FirebaseStorage;
-
+// This is mainly for server actions that can handle the async initialization implicitly.
 if (isFirebaseConfigValid) {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
