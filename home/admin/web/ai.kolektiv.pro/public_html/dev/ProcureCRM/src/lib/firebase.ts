@@ -1,4 +1,3 @@
-
 'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
