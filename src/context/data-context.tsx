@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
 import { get, ref, onValue, off } from 'firebase/database';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import type { Client, Interaction, Opportunity, Task } from '@/lib/types';
 import type { User } from '@/lib/users';
 
@@ -56,8 +56,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
    * When the user logs out, it cleans up the listeners.
    */
   useEffect(() => {
-    // Only set up listeners if the user is logged in AND the database is initialized
-    if (user && db) {
+    // Only set up listeners if the user is logged in
+    if (user) {
+      const db = getFirebaseDb();
       setLoading(true);
       
       const refs = [
@@ -172,7 +173,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         refs.forEach((r, i) => off(r, 'value', listeners[i]));
       };
     } else {
-      // If user is logged out or db is not ready, clear all data and set loading to false.
+      // If user is logged out, clear all data and set loading to false.
       setClients([]);
       setInteractions([]);
       setOpportunities([]);

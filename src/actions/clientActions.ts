@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import { ref, push, set, serverTimestamp } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
 
@@ -25,10 +25,7 @@ export async function addClientAction(values: z.infer<typeof clientFormSchema>) 
         };
     }
     
-    if (!db) {
-        return { error: 'Firebase is not initialized.' };
-    }
-
+    const db = getFirebaseDb();
     const clientsRef = ref(db, 'clients');
     const newClientRef = push(clientsRef);
     

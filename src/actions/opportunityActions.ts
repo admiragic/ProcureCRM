@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import { ref, push, set } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
 
@@ -21,10 +21,7 @@ export async function addOpportunityAction(values: z.infer<typeof opportunityFor
         };
     }
     
-    if (!db) {
-        return { error: 'Firebase is not initialized.' };
-    }
-
+    const db = getFirebaseDb();
     const newOppRef = push(ref(db, 'opportunities'));
 
     try {

@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import { ref, push, set, update, remove } from 'firebase/database';
 import type { Task } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
@@ -26,10 +26,7 @@ export async function addTaskAction(values: z.infer<typeof taskFormSchema>) {
         };
     }
 
-    if (!db) {
-        return { error: 'Firebase is not initialized.' };
-    }
-    
+    const db = getFirebaseDb();
     const newTaskRef = push(ref(db, 'tasks'));
     try {
         await set(newTaskRef, validatedFields.data);
@@ -43,10 +40,7 @@ export async function addTaskAction(values: z.infer<typeof taskFormSchema>) {
 export async function updateTaskStatusAction(taskId: string, status: Task['status']) {
     if (!taskId) return { error: "Task ID is missing" };
 
-    if (!db) {
-        return { error: 'Firebase is not initialized.' };
-    }
-
+    const db = getFirebaseDb();
     const taskRef = ref(db, `tasks/${taskId}`);
     try {
         await update(taskRef, { status });
@@ -60,10 +54,7 @@ export async function updateTaskStatusAction(taskId: string, status: Task['statu
 export async function deleteTaskAction(taskId: string) {
     if (!taskId) return { error: "Task ID is missing" };
     
-    if (!db) {
-        return { error: 'Firebase is not initialized.' };
-    }
-    
+    const db = getFirebaseDb();
     const taskRef = ref(db, `tasks/${taskId}`);
     try {
         await remove(taskRef);

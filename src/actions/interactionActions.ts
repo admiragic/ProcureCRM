@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import { ref, push, set, serverTimestamp } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
 
@@ -21,10 +21,7 @@ export async function addInteractionAction(values: z.infer<typeof interactionFor
         };
     }
     
-    if (!db) {
-        return { error: 'Firebase is not initialized.' };
-    }
-
+    const db = getFirebaseDb();
     const interactionsRef = ref(db, 'interactions');
     const newInteractionRef = push(interactionsRef);
 

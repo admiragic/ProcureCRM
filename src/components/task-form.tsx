@@ -30,7 +30,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { storage } from "@/lib/firebase";
+import { getFirebaseStorage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useData } from "@/context/data-context";
 import { addTaskAction } from "@/actions/taskActions";
@@ -83,15 +83,7 @@ export function TaskForm() {
    * @param {TaskFormValues} values - The validated form values.
    */
   async function onSubmit(values: TaskFormValues) {
-    if (!storage) {
-        toast({
-            title: "Error",
-            description: "Firebase Storage is not initialized.",
-            variant: "destructive"
-        });
-        return;
-    }
-
+    const storage = getFirebaseStorage();
     try {
       // Upload files and get their download URLs
       const fileURLs = await Promise.all(
