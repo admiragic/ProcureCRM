@@ -20,6 +20,10 @@ export async function addInteractionAction(values: z.infer<typeof interactionFor
             errors: validatedFields.error.flatten().fieldErrors,
         };
     }
+    
+    if (!db) {
+        return { error: 'Firebase is not initialized.' };
+    }
 
     const interactionsRef = ref(db, 'interactions');
     const newInteractionRef = push(interactionsRef);

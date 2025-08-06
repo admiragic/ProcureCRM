@@ -1,7 +1,8 @@
 'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
- * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
+ * It ensures that Firebase is initialized only once (singleton pattern) and exports
+ * instances of the Firebase services (Auth, Database, Storage).
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
@@ -42,9 +43,10 @@ if (isFirebaseConfigValid) {
     db = getDatabase(app);
     storage = getStorage(app);
 } else {
+    // This warning will be shown during the build process if the .env.local file is not available
+    // It should not appear in the browser console if the env vars are set correctly.
     console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
 }
-
 
 // @ts-ignore
 export { db, auth, storage };

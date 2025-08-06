@@ -21,6 +21,10 @@ export async function addOpportunityAction(values: z.infer<typeof opportunityFor
         };
     }
     
+    if (!db) {
+        return { error: 'Firebase is not initialized.' };
+    }
+
     const newOppRef = push(ref(db, 'opportunities'));
 
     try {

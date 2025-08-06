@@ -25,6 +25,10 @@ export async function addClientAction(values: z.infer<typeof clientFormSchema>) 
         };
     }
     
+    if (!db) {
+        return { error: 'Firebase is not initialized.' };
+    }
+
     const clientsRef = ref(db, 'clients');
     const newClientRef = push(clientsRef);
     

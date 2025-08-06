@@ -56,7 +56,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
    * When the user logs out, it cleans up the listeners.
    */
   useEffect(() => {
-    if (user) {
+    // Only set up listeners if the user is logged in AND the database is initialized
+    if (user && db) {
       setLoading(true);
       
       const refs = [
@@ -77,7 +78,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           } else {
             setClients([]);
           }
-        }),
+        }, { onlyOnce: false }), // Changed to ensure real-time updates
         // Listener for interactions, with client data enrichment
         onValue(refs[1], async (snapshot) => {
             if (snapshot.exists()) {
@@ -103,7 +104,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
               } else {
                   setInteractions([]);
               }
-        }),
+        }, { onlyOnce: false }),
         // Listener for opportunities, with client data enrichment
         onValue(refs[2], async (snapshot) => {
               if (snapshot.exists()) {
@@ -126,7 +127,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
               } else {
                   setOpportunities([]);
               }
-          }),
+          }, { onlyOnce: false }),
         // Listener for tasks, with client data enrichment
         onValue(refs[3], async (snapshot) => {
               if (snapshot.exists()) {
@@ -149,7 +150,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
               } else {
                   setTasks([]);
               }
-          }),
+          }, { onlyOnce: false }),
         // Listener for users
         onValue(refs[4], (snapshot) => {
             if (snapshot.exists()) {
@@ -158,11 +159,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             } else {
                 setUsers([]);
             }
-        }),
+        }, { onlyOnce: false }),
       ];
 
       // Once all initial data is fetched, set loading to false.
-      Promise.all(listeners).then(() => setLoading(false)).catch(() => setLoading(false));
+      // We don't need Promise.all here as onValue will trigger updates when ready.
+      setLoading(false);
 
 
       // Cleanup function to detach all listeners when the component unmounts or the user logs out.
@@ -170,7 +172,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         refs.forEach((r, i) => off(r, 'value', listeners[i]));
       };
     } else {
-      // If user is logged out, clear all data and set loading to false.
+      // If user is logged out or db is not ready, clear all data and set loading to false.
       setClients([]);
       setInteractions([]);
       setOpportunities([]);

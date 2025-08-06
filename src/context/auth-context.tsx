@@ -47,48 +47,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * It sets the user object when a user logs in and clears it on logout.
    */
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    };
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // If a user is authenticated, fetch their details from the database.
-        const userRef = ref(db, `users/${firebaseUser.uid}`);
-        const snapshot = await get(userRef).catch(() => null);
+    // Check if auth is initialized before setting up the listener
+    if (auth) {
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+          if (firebaseUser) {
+            // If a user is authenticated, fetch their details from the database.
+            const userRef = ref(db, `users/${firebaseUser.uid}`);
+            const snapshot = await get(userRef).catch(() => null);
 
-        if (snapshot?.exists()) {
-             // Create a user object with data from both Auth and the Database.
-            const userDoc: User = {
-                id: firebaseUser.uid,
-                email: firebaseUser.email || '',
-                name: snapshot?.val()?.name || 'Korisnik',
-                username: snapshot?.val()?.username || firebaseUser.email || '',
-                // The role is fetched from the database, providing a single source of truth.
-                role: snapshot?.val()?.role || 'user',
-            };
-            setUser(userDoc);
-        } else {
-            // Handle case where user exists in Auth but not in the database
-            // This might happen if database entry was manually deleted.
-            // For now, we sign them out to prevent an inconsistent state.
-            await signOut(auth);
+            if (snapshot?.exists()) {
+                 // Create a user object with data from both Auth and the Database.
+                const userDoc: User = {
+                    id: firebaseUser.uid,
+                    email: firebaseUser.email || '',
+                    name: snapshot?.val()?.name || 'Korisnik',
+                    username: snapshot?.val()?.username || firebaseUser.email || '',
+                    // The role is fetched from the database, providing a single source of truth.
+                    role: snapshot?.val()?.role || 'user',
+                };
+                setUser(userDoc);
+            } else {
+                // Handle case where user exists in Auth but not in the database
+                // This might happen if database entry was manually deleted.
+                // For now, we sign them out to prevent an inconsistent state.
+                await signOut(auth);
+                setUser(null);
+            }
+          } else {
             setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    // Cleanup function to unsubscribe from the listener on component unmount.
-    return () => unsubscribe();
+          }
+          setLoading(false);
+        });
+        
+        // Cleanup function to unsubscribe from the listener on component unmount.
+        return () => unsubscribe();
+    } else {
+        // If auth is not initialized, stop loading and do nothing.
+        setLoading(false);
+    }
   }, []);
   
   /**
    * Signs in a user with email and password.
-   * @param {string} email - The user's email.
-   * @param {string} pass - The user's password.
    */
   const login = async (email: string, pass: string) => {
     if (!auth) throw new Error("Firebase Auth is not initialized.");
