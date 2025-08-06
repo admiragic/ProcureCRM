@@ -35,15 +35,16 @@ let auth: Auth;
 let db: Database;
 let storage: FirebaseStorage;
 
-// Initialize Firebase only if the configuration is valid
-// This prevents errors during the build process if env vars are not set.
+// Initialize Firebase only if the configuration is valid and no app is initialized yet.
+// This prevents errors during the build process if env vars are not set, and ensures singleton pattern.
 if (isFirebaseConfigValid) {
     app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getDatabase(app);
     storage = getStorage(app);
-} else {
-    console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
+} else if (typeof window === 'undefined') {
+    // During server-side rendering or build, if config is invalid, we do nothing.
+    // The console.warn is removed to keep build logs clean as requested.
 }
 
 
