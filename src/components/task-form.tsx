@@ -26,7 +26,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save, CalendarIcon, Upload, X, Paperclip } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import { addTask } from "@/services/taskService";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -35,11 +34,13 @@ import { useRouter } from "next/navigation";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useData } from "@/context/data-context";
+import { addTaskAction } from "@/actions/taskActions";
 
 /**
  * A form for creating or editing tasks.
  * It includes fields for title, client, assignee, due date, time estimate, status,
  * and allows for file uploads to Firebase Storage.
+ * On submission, it invokes a Server Action to securely add the task to the database.
  * @returns {React.ReactElement} The rendered task form.
  */
 export function TaskForm() {
@@ -77,9 +78,9 @@ export function TaskForm() {
   });
 
   /**
-   * Handles the form submission.
-   * It uploads any attached files to Firebase Storage, gets their download URLs,
-   * and then saves the task data (including file URLs) to the database.
+   * Handles the form submission by invoking a Server Action.
+   * It first uploads any attached files to Firebase Storage, gets their download URLs,
+   * and then calls the Server Action to save the task data (including file URLs) securely.
    * @param {TaskFormValues} values - The validated form values.
    */
   async function onSubmit(values: TaskFormValues) {
@@ -93,8 +94,8 @@ export function TaskForm() {
         })
       );
       
-      // Add the task to the database with the file URLs
-      await addTask({ 
+      // Call the Server Action with the complete task data
+      await addTaskAction({ 
         ...values, 
         dueDate: format(values.dueDate, 'yyyy-MM-dd'),
         documents: fileURLs 
@@ -308,9 +309,9 @@ export function TaskForm() {
               </div>
             </div>
             <div className="flex justify-end">
-              <Button type="submit">
+               <Button type="submit" disabled={form.formState.isSubmitting}>
                 <Save className="mr-2 h-4 w-4" />
-                {t('task_form.save_button')}
+                {form.formState.isSubmitting ? "Saving..." : t('task_form.save_button')}
               </Button>
             </div>
           </form>

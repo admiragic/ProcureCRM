@@ -25,12 +25,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Save } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useToast } from "@/hooks/use-toast";
-import { addClient } from "@/services/clientService";
 import { useRouter } from "next/navigation";
+import { addClientAction } from "@/actions/clientActions";
 
 /**
  * A form component for creating or editing a client.
  * It uses react-hook-form for form state management and Zod for validation.
+ * On submission, it invokes a Server Action to securely add the client to the database.
  * @returns {React.ReactElement} The rendered client form.
  */
 export function ClientForm() {
@@ -68,13 +69,13 @@ export function ClientForm() {
   });
 
   /**
-   * Handles the form submission.
-   * It calls the `addClient` service, shows a toast notification, and redirects on success.
+   * Handles the form submission by invoking a Server Action.
+   * This sends the form data to the server for processing, enhancing security.
    * @param {ClientFormValues} values - The validated form values.
    */
   async function onSubmit(values: ClientFormValues) {
     try {
-      await addClient(values);
+      await addClientAction(values);
       toast({
           title: t('client_form.toast_success_title'),
           description: t('client_form.toast_success_description', { companyName: values.companyName }),
@@ -225,9 +226,9 @@ export function ClientForm() {
               />
             </div>
             <div className="flex justify-end">
-              <Button type="submit">
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 <Save className="mr-2 h-4 w-4" />
-                {t('client_form.save_button')}
+                {form.formState.isSubmitting ? "Saving..." : t('client_form.save_button')}
               </Button>
             </div>
           </form>

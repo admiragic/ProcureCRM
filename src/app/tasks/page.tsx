@@ -3,16 +3,17 @@
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { updateTaskStatus, deleteTask } from "@/services/taskService";
 import { cn } from "@/lib/utils";
 import { PlusCircle, Clock, MoreVertical, Calendar, CircleHelp, Circle, CheckCircle } from "lucide-react";
 import { format, isPast, isToday, parseISO } from "date-fns";
 import Link from "next/link";
 import { useLanguage } from "@/context/language-context";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import type { Task } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useData } from "@/context/data-context";
+import { deleteTaskAction, updateTaskStatusAction } from "@/actions/taskActions";
+import { useToast } from "@/hooks/use-toast";
 
 // A map to associate a Lucide icon with each task status.
 const statusIcons: Record<Task['status'], React.ElementType> = {
@@ -31,42 +32,65 @@ const statusColors: Record<Task['status'], string> = {
 
 /**
  * The main page for displaying and managing tasks.
- * It features filtering, task completion, and deletion functionalities.
+ * It features filtering, and uses Server Actions for task completion and deletion.
  * @returns {React.ReactElement} The rendered tasks page.
  */
 export default function TasksPage() {
     const { t } = useLanguage();
+    const { toast } = useToast();
     // Using the useData hook to get tasks and a function to update them.
     const { tasks, setTasks } = useData();
     // State for filtering tasks by status.
     const [filter, setFilter] = useState<'all' | Task['status']>('all');
+    const [isPending, startTransition] = useTransition();
 
     /**
-     * Handles toggling the completion status of a task.
-     * It updates the status in the database and then optimistically updates the local state.
+     * Handles toggling the completion status of a task using a Server Action.
+     * It optimistically updates the local state for a smoother user experience.
      * @param {string} taskId - The ID of the task to update.
      * @param {Task['status']} currentStatus - The current status of the task.
      */
-    const handleTaskCompletion = async (taskId: string, currentStatus: Task['status']) => {
+    const handleTaskCompletion = (taskId: string, currentStatus: Task['status']) => {
         const newStatus = currentStatus === 'closed' ? 'open' : 'closed';
-        await updateTaskStatus(taskId, newStatus);
-        // Optimistic UI update for a smoother user experience.
+        
+        // Optimistic UI update
         setTasks(currentTasks =>
             currentTasks.map(task =>
                 task.id === taskId ? { ...task, status: newStatus } : task
             )
         );
+
+        startTransition(async () => {
+            const result = await updateTaskStatusAction(taskId, newStatus);
+            if (result?.error) {
+                toast({ title: "Error", description: result.error, variant: "destructive" });
+                // Revert optimistic update on error
+                 setTasks(currentTasks =>
+                    currentTasks.map(task =>
+                        task.id === taskId ? { ...task, status: currentStatus } : task
+                    )
+                );
+            }
+        });
     };
 
     /**
-     * Handles the deletion of a task.
+     * Handles the deletion of a task using a Server Action.
      * @param {string} taskId - The ID of the task to delete.
      */
-    const handleDelete = async (taskId: string) => {
-        // Placeholder alert, should be replaced with a confirmation dialog in a real app.
-        alert(`Deleting task ${taskId}`);
-        await deleteTask(taskId);
+    const handleDelete = (taskId: string) => {
+        // Optimistic UI update
+        const originalTasks = tasks;
         setTasks(currentTasks => currentTasks.filter(task => task.id !== taskId));
+        
+        startTransition(async () => {
+            const result = await deleteTaskAction(taskId);
+             if (result?.error) {
+                toast({ title: "Error", description: result.error, variant: "destructive" });
+                // Revert optimistic update on error
+                setTasks(originalTasks);
+            }
+        });
     };
     
     /**
@@ -127,7 +151,7 @@ export default function TasksPage() {
                 const isOverdue = task.status !== 'closed' && isPast(dueDate) && !isToday(dueDate);
                 const StatusIcon = statusIcons[task.status];
                 return (
-                  <li key={task.id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group">
+                  <li key={task.id} className={cn("flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group", isPending && 'opacity-50')}>
                     <button onClick={() => handleTaskCompletion(task.id, task.status)} className={cn("cursor-pointer", statusColors[task.status])}>
                         <StatusIcon className="h-5 w-5" />
                     </button>

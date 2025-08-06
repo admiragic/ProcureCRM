@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateEmail, deleteUser as deleteFirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { ref, get, set, remove, update } from 'firebase/database';
 import type { User } from '@/lib/users';
 import { useRouter } from 'next/navigation';
@@ -14,16 +14,16 @@ import { auth, db } from '@/lib/firebase';
  * @property {boolean} loading - A boolean indicating if the authentication state is currently being determined.
  * @property {(email: string, pass: string) => Promise<void>} login - Function to log in a user.
  * @property {() => void} logout - Function to log out the current user.
- * @property {(email: string, pass: string, user: Omit<User, 'id' | 'password'>) => Promise<void>} addUser - Function to create a new user account.
+ * @property {(email: string, pass: string, user: Omit<User, 'id'>) => Promise<void>} addUser - Function to create a new user account.
  * @property {(user: User) => Promise<void>} updateUser - Function to update a user's data in the database.
- * @property {(userId: string) => Promise<void>} deleteUser - Function to delete a user's account and data.
+ * @property {(userId: string) => Promise<void>} deleteUser - Function to delete a user's data from the database.
  */
 type AuthContextType = {
   user: User | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
-  addUser: (email: string, password: string, newUser: Omit<User, 'id' | 'password'>) => Promise<void>;
+  addUser: (email: string, password: string, newUser: Omit<User, 'id'>) => Promise<void>;
   updateUser: (user: User) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
 };
@@ -54,16 +54,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userRef = ref(db, `users/${firebaseUser.uid}`);
         const snapshot = await get(userRef).catch(() => null);
 
-        // Create a user object with data from both Auth and the Database.
-        const userDoc: User = {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            name: snapshot?.val()?.name || 'Korisnik',
-            username: snapshot?.val()?.username || firebaseUser.email || '',
-            // The role is fetched from the database, providing a single source of truth.
-            role: snapshot?.val()?.role || 'user',
-        };
-        setUser(userDoc);
+        if (snapshot?.exists()) {
+             // Create a user object with data from both Auth and the Database.
+            const userDoc: User = {
+                id: firebaseUser.uid,
+                email: firebaseUser.email || '',
+                name: snapshot?.val()?.name || 'Korisnik',
+                username: snapshot?.val()?.username || firebaseUser.email || '',
+                // The role is fetched from the database, providing a single source of truth.
+                role: snapshot?.val()?.role || 'user',
+            };
+            setUser(userDoc);
+        } else {
+            // Handle case where user exists in Auth but not in the database
+            // This might happen if database entry was manually deleted.
+            // For now, we sign them out to prevent an inconsistent state.
+            await signOut(auth);
+            setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -95,26 +103,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * Creates a new user in Firebase Authentication and adds their details to the Realtime Database.
    * @param {string} email - The user's email for authentication.
    * @param {string} password - The user's password for authentication.
-   * @param {Omit<User, 'id' | 'password'>} newUser - The user object containing additional details.
+   * @param {Omit<User, 'id'>} newUser - The user object containing additional details.
    */
-  const addUser = async (email: string, password: string, newUser: Omit<User, 'id' | 'password'>) => {
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-        
-        // Add user details to the Realtime Database under the `users` node.
-        const newUserRef = ref(db, `users/${uid}`);
-        await set(newUserRef, {
-          username: newUser.username,
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
-        });
-
-    } catch(error) {
-        console.error("Error creating new user:", error);
-        throw error; // Re-throw the error to be caught by the form
-    }
+  const addUser = async (email: string, password: string, newUser: Omit<User, 'id'>) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
+    
+    // Add user details to the Realtime Database under the `users` node.
+    const newUserRef = ref(db, `users/${uid}`);
+    await set(newUserRef, {
+      username: newUser.username,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    });
   };
 
   /**
@@ -122,39 +124,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * @param {User} updatedUser - The user object with updated information.
    */
   const updateUser = async (updatedUser: User) => {
-    try {
-        const userRef = ref(db, `users/${updatedUser.id}`);
-        await update(userRef, {
-            name: updatedUser.name,
-            username: updatedUser.username,
-            role: updatedUser.role,
-            email: updatedUser.email
-        });
-        
-        // Note: Updating email in Firebase Auth is a sensitive operation
-        // requiring re-authentication and is not implemented here for simplicity.
-    } catch (error) {
-        console.error("Error updating user:", error);
-        throw error;
-    }
+    const userRef = ref(db, `users/${updatedUser.id}`);
+    await update(userRef, {
+        name: updatedUser.name,
+        username: updatedUser.username,
+        role: updatedUser.role,
+        email: updatedUser.email
+    });
+    
+    // Note: Updating email in Firebase Auth is a sensitive operation
+    // requiring re-authentication and is not implemented here for simplicity.
   };
 
   /**
-   * Deletes a user from the Realtime Database.
+   * Deletes a user's record from the Realtime Database.
    * IMPORTANT: This only removes the user from the database, not from Firebase Authentication.
-   * The user will still exist and be able to log in. For full deletion,
-   * a backend function (e.g., Firebase Cloud Function) is required to delete the Auth user.
-   * @param {string} userId - The ID of the user to delete.
+   * The user will still exist and be able to log in, but their data will be gone.
+   * For full and secure deletion, a backend function (e.g., Firebase Cloud Function)
+   * that uses the Admin SDK is required to delete the Auth user record.
+   * @param {string} userId - The ID of the user to delete from the database.
    */
   const deleteUser = async (userId: string) => {
-      try {
-        const userRef = ref(db, `users/${userId}`);
-        await remove(userRef);
-        console.log(`User ${userId} deleted from Realtime Database. Please delete from Firebase Auth console.`);
-    } catch (error) {
-        console.error("Error deleting user:", error);
-        throw error;
-    }
+    const userRef = ref(db, `users/${userId}`);
+    await remove(userRef);
+    console.warn(`User ${userId} deleted from Realtime Database. Please delete the corresponding user from the Firebase Auth console to complete the process.`);
   };
 
   return (

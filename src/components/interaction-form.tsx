@@ -25,14 +25,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Save } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import { addInteraction } from "@/services/interactionService";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useData } from "@/context/data-context";
+import { addInteractionAction } from "@/actions/interactionActions";
 
 /**
  * A form for logging a new client interaction.
  * It uses react-hook-form and Zod for validation and state management.
+ * On submission, it invokes a Server Action to securely add the interaction to the database.
  * @returns {React.ReactElement} The rendered interaction form.
  */
 export function InteractionForm() {
@@ -64,13 +65,13 @@ export function InteractionForm() {
   });
 
   /**
-   * Handles the form submission.
-   * It calls the `addInteraction` service, shows a toast, and redirects on success.
+   * Handles the form submission by invoking a Server Action.
+   * It sends the form data to the server for secure processing.
    * @param {InteractionFormValues} values - The validated form values.
    */
   async function onSubmit(values: InteractionFormValues) {
     try {
-        await addInteraction(values);
+        await addInteractionAction(values);
         toast({
             title: t('interaction_form.toast_success_title'),
             description: t('interaction_form.toast_success_description'),
@@ -174,9 +175,9 @@ export function InteractionForm() {
                 </div>
             </div>
             <div className="flex justify-end">
-              <Button type="submit">
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 <Save className="mr-2 h-4 w-4" />
-                {t('interaction_form.save_button')}
+                 {form.formState.isSubmitting ? "Saving..." : t('interaction_form.save_button')}
               </Button>
             </div>
           </form>

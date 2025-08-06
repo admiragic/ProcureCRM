@@ -29,13 +29,14 @@ import { useLanguage } from "@/context/language-context";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { addOpportunity } from "@/services/opportunityService";
 import { useRouter } from "next/navigation";
 import { useData } from "@/context/data-context";
+import { addOpportunityAction } from "@/actions/opportunityActions";
 
 /**
  * A form for creating or editing a sales opportunity.
  * It uses react-hook-form and Zod for validation.
+ * On submission, it invokes a Server Action to securely add the opportunity to the database.
  * @returns {React.ReactElement} The rendered opportunity form.
  */
 export function OpportunityForm() {
@@ -68,13 +69,13 @@ export function OpportunityForm() {
   });
 
   /**
-   * Handles the form submission.
-   * It formats the data and calls the `addOpportunity` service.
+   * Handles the form submission by invoking a Server Action.
+   * It formats the data and sends it to the server for secure processing.
    * @param {OpportunityFormValues} values - The validated form values.
    */
   async function onSubmit(values: OpportunityFormValues) {
     try {
-      await addOpportunity({
+      await addOpportunityAction({
         ...values,
         closingDate: format(values.closingDate, 'yyyy-MM-dd') // Format date for DB
       });
@@ -205,9 +206,9 @@ export function OpportunityForm() {
               />
             </div>
             <div className="flex justify-end">
-              <Button type="submit">
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 <Save className="mr-2 h-4 w-4" />
-                {t('opportunity_form.save_button')}
+                {form.formState.isSubmitting ? "Saving..." : t('opportunity_form.save_button')}
               </Button>
             </div>
           </form>
