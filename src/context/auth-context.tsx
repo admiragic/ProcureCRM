@@ -23,7 +23,7 @@ type AuthContextType = {
   loading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
-  addUser: (email: string, pass: string, user: Omit<User, 'id' | 'password'>) => Promise<void>;
+  addUser: (email: string, password: string, newUser: Omit<User, 'id' | 'password'>) => Promise<void>;
   updateUser: (user: User) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
 };
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: firebaseUser.email || '',
             name: snapshot?.val()?.name || 'Korisnik',
             username: snapshot?.val()?.username || firebaseUser.email || '',
-            // Simple logic to assign role based on email.
+            // The role is fetched from the database, providing a single source of truth.
             role: snapshot?.val()?.role || 'user',
         };
         setUser(userDoc);
