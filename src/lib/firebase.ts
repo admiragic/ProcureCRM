@@ -1,8 +1,6 @@
-
-'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
- * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
+ * It exports singleton getter functions to ensure Firebase services are initialized only once.
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
@@ -30,35 +28,31 @@ const isFirebaseConfigValid =
   firebaseConfig.appId &&
   firebaseConfig.databaseURL;
 
+
 let app: FirebaseApp;
+let auth: Auth;
+let db: Database;
+let storage: FirebaseStorage;
 
-if (isFirebaseConfigValid) {
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-} else {
-    console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
-}
 
-function getFirebaseAuth(): Auth {
+function initializeFirebase() {
     if (!isFirebaseConfigValid) {
-        throw new Error("Firebase configuration is incomplete.");
+        console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
+        return;
     }
-    return getAuth(app);
+    
+    if (getApps().length === 0) {
+        app = initializeApp(firebaseConfig);
+    } else {
+        app = getApp();
+    }
+    
+    auth = getAuth(app);
+    db = getDatabase(app);
+    storage = getStorage(app);
 }
 
-function getFirebaseDb(): Database {
-    if (!isFirebaseConfigValid) {
-        throw new Error("Firebase configuration is incomplete.");
-    }
-    return getDatabase(app);
-}
+// Initialize on load
+initializeFirebase();
 
-function getFirebaseStorage(): FirebaseStorage {
-    if (!isFirebaseConfigValid) {
-        throw new Error("Firebase configuration is incomplete.");
-    }
-    return getStorage(app);
-}
-
-export const auth = isFirebaseConfigValid ? getFirebaseAuth() : undefined;
-export const db = isFirebaseConfigValid ? getFirebaseDb() : undefined;
-export const storage = isFirebaseConfigValid ? getFirebaseStorage() : undefined;
+export { db, auth, storage };
