@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
 import { get, ref, onValue, off } from 'firebase/database';
-import { getFirebaseDb } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import type { Client, Interaction, Opportunity, Task } from '@/lib/types';
 import type { User } from '@/lib/users';
 
@@ -56,9 +57,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
    * When the user logs out, it cleans up the listeners.
    */
   useEffect(() => {
-    // Only set up listeners if the user is logged in
-    if (user) {
-      const db = getFirebaseDb();
+    // Only set up listeners if the user is logged in and db is available
+    if (user && db) {
       setLoading(true);
       
       const refs = [

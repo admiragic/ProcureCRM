@@ -1,7 +1,8 @@
+
 'use server';
 
 import { z } from 'zod';
-import { getFirebaseDb } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { ref, push, set } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
 
@@ -20,8 +21,11 @@ export async function addOpportunityAction(values: z.infer<typeof opportunityFor
             errors: validatedFields.error.flatten().fieldErrors,
         };
     }
+
+    if (!db) {
+        return { error: 'Database not configured.' };
+    }
     
-    const db = getFirebaseDb();
     const newOppRef = push(ref(db, 'opportunities'));
 
     try {

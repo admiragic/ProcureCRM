@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -30,7 +31,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getFirebaseStorage } from "@/lib/firebase";
+import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useData } from "@/context/data-context";
 import { addTaskAction } from "@/actions/taskActions";
@@ -83,7 +84,16 @@ export function TaskForm() {
    * @param {TaskFormValues} values - The validated form values.
    */
   async function onSubmit(values: TaskFormValues) {
-    const storage = getFirebaseStorage();
+    
+    if (!storage) {
+       toast({
+        title: "Error",
+        description: "Storage is not configured. Cannot upload files.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       // Upload files and get their download URLs
       const fileURLs = await Promise.all(

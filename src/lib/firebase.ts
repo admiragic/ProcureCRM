@@ -1,5 +1,4 @@
 
-'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
  * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
@@ -46,6 +45,4 @@ if (isFirebaseConfigValid) {
     console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
 }
 
-
-// @ts-ignore
 export { db, auth, storage };

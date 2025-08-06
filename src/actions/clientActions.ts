@@ -1,7 +1,8 @@
+
 'use server';
 
 import { z } from 'zod';
-import { getFirebaseDb } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { ref, push, set, serverTimestamp } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
 
@@ -25,7 +26,10 @@ export async function addClientAction(values: z.infer<typeof clientFormSchema>) 
         };
     }
     
-    const db = getFirebaseDb();
+    if (!db) {
+        return { error: 'Database not configured.' };
+    }
+    
     const clientsRef = ref(db, 'clients');
     const newClientRef = push(clientsRef);
     
