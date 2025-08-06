@@ -44,6 +44,13 @@ export default function LoginPage() {
    */
   const handleLogin = async () => {
     setError('');
+
+    // Simple client-side validation
+    if (!email || !password) {
+      setError(t('login_page.error_invalid_credentials'));
+      return;
+    }
+
     setIsLoading(true);
     try {
       await login(email, password);
@@ -52,7 +59,7 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error("Login failed:", err);
       // Provide user-friendly error messages based on the Firebase error code
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
         setError(t('login_page.error_invalid_credentials'));
       } else if (err.code === 'auth/configuration-not-found') {
         setError(t('login_page.error_config_problem'));
