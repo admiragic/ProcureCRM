@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -26,10 +25,6 @@ export async function addClientAction(values: z.infer<typeof clientFormSchema>) 
         };
     }
     
-    if (!db) {
-        return { error: 'Database not configured' };
-    }
-
     const clientsRef = ref(db, 'clients');
     const newClientRef = push(clientsRef);
     

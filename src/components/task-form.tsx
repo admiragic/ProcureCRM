@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -84,10 +83,6 @@ export function TaskForm() {
    * @param {TaskFormValues} values - The validated form values.
    */
   async function onSubmit(values: TaskFormValues) {
-    if (!storage) {
-        toast({ title: "Error", description: "Storage not configured.", variant: "destructive" });
-        return;
-    }
     try {
       // Upload files and get their download URLs
       const fileURLs = await Promise.all(

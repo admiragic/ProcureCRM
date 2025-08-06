@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -20,10 +19,6 @@ export async function addInteractionAction(values: z.infer<typeof interactionFor
         return {
             errors: validatedFields.error.flatten().fieldErrors,
         };
-    }
-
-    if (!db) {
-        return { error: 'Database not configured' };
     }
 
     const interactionsRef = ref(db, 'interactions');

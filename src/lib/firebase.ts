@@ -1,8 +1,8 @@
-
 'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
- * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
+ * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage
+ * using a singleton pattern to ensure Firebase is initialized only once.
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
@@ -20,33 +20,10 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// Check if all required environment variables are present.
-const isFirebaseConfigValid =
-  firebaseConfig.apiKey &&
-  firebaseConfig.authDomain &&
-  firebaseConfig.projectId &&
-  firebaseConfig.storageBucket &&
-  firebaseConfig.messagingSenderId &&
-  firebaseConfig.appId &&
-  firebaseConfig.databaseURL;
+// Initialize Firebase
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth: Auth = getAuth(app);
+const db: Database = getDatabase(app);
+const storage: FirebaseStorage = getStorage(app);
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Database;
-let storage: FirebaseStorage;
-
-// Initialize Firebase only if the configuration is valid and no app is initialized yet.
-// This prevents errors during the build process if env vars are not set, and ensures singleton pattern.
-if (isFirebaseConfigValid) {
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getDatabase(app);
-    storage = getStorage(app);
-} else if (typeof window === 'undefined') {
-    // During server-side rendering or build, if config is invalid, we do nothing.
-    // The console.warn is removed to keep build logs clean as requested.
-}
-
-
-// @ts-ignore
 export { db, auth, storage };

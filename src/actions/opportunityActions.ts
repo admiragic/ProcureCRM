@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -22,10 +21,6 @@ export async function addOpportunityAction(values: z.infer<typeof opportunityFor
         };
     }
     
-    if (!db) {
-        return { error: 'Database not configured' };
-    }
-
     const newOppRef = push(ref(db, 'opportunities'));
 
     try {
