@@ -1,6 +1,8 @@
+
+'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
- * It exports singleton getter functions to ensure Firebase services are initialized only once.
+ * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
@@ -28,31 +30,22 @@ const isFirebaseConfigValid =
   firebaseConfig.appId &&
   firebaseConfig.databaseURL;
 
-
 let app: FirebaseApp;
 let auth: Auth;
 let db: Database;
 let storage: FirebaseStorage;
 
-
-function initializeFirebase() {
-    if (!isFirebaseConfigValid) {
-        console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
-        return;
-    }
-    
-    if (getApps().length === 0) {
-        app = initializeApp(firebaseConfig);
-    } else {
-        app = getApp();
-    }
-    
+// Initialize Firebase only if the configuration is valid
+// This prevents errors during the build process if env vars are not set.
+if (isFirebaseConfigValid) {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getDatabase(app);
     storage = getStorage(app);
+} else {
+    console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
 }
 
-// Initialize on load
-initializeFirebase();
 
+// @ts-ignore
 export { db, auth, storage };
