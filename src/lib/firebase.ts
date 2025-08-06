@@ -1,7 +1,8 @@
+
 'use client';
 /**
  * @file This file initializes and configures the Firebase SDK for the application.
- * It uses a singleton pattern to ensure Firebase is initialized only once.
+ * It exports instances of the Firebase app, Realtime Database, Authentication, and Storage.
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
@@ -19,29 +20,32 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// Singleton function to get the Firebase app instance
-function getFirebaseApp(): FirebaseApp {
-    if (getApps().length === 0) {
-        if (!firebaseConfig.projectId) {
-            throw new Error("Firebase config is incomplete. Check your .env.local file.");
-        }
-        return initializeApp(firebaseConfig);
-    } else {
-        return getApp();
-    }
+// Check if all required environment variables are present.
+const isFirebaseConfigValid =
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId &&
+  firebaseConfig.databaseURL;
+
+let app: FirebaseApp;
+let auth: Auth;
+let db: Database;
+let storage: FirebaseStorage;
+
+// Initialize Firebase only if the configuration is valid
+// This prevents errors during the build process if env vars are not set.
+if (isFirebaseConfigValid) {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getDatabase(app);
+    storage = getStorage(app);
+} else {
+    console.warn("Firebase configuration is incomplete. Firebase services will not be available. This is expected during the build process if environment variables are not set.");
 }
 
-function getFirebaseAuth(): Auth {
-    return getAuth(getFirebaseApp());
-}
 
-function getFirebaseDb(): Database {
-    return getDatabase(getFirebaseApp());
-}
-
-function getFirebaseStorage(): FirebaseStorage {
-    return getStorage(getFirebaseApp());
-}
-
-
-export { getFirebaseAuth, getFirebaseDb, getFirebaseStorage };
+// @ts-ignore
+export { db, auth, storage };
