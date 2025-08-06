@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { get, ref, onValue, off } from 'firebase/database';
-import { db } from '@/lib/firebase';
+import { getDbInstance } from '@/lib/firebase';
 import type { Client, Interaction, Opportunity, Task } from '@/lib/types';
 import type { User } from '@/lib/users';
 
@@ -56,131 +57,123 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
    * When the user logs out, it cleans up the listeners.
    */
   useEffect(() => {
-    // Only set up listeners if the user is logged in and db is available
-    if (user && db) {
-      setLoading(true);
-      
-      const refs = [
-        ref(db, 'clients'),
-        ref(db, 'interactions'),
-        ref(db, 'opportunities'),
-        ref(db, 'tasks'),
-        ref(db, 'users'),
-      ];
+    const setupListeners = async () => {
+        if (user) {
+            setLoading(true);
+            try {
+                const db = await getDbInstance();
 
-      // Array to hold the listener functions for easy cleanup
-      const listeners = [
-        // Listener for clients
-        onValue(refs[0], (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.val();
-            setClients(Object.keys(data).map(key => ({ id: key, ...data[key] })));
-          } else {
-            setClients([]);
-          }
-        }, { onlyOnce: false }), // Changed to ensure real-time updates
-        // Listener for interactions, with client data enrichment
-        onValue(refs[1], async (snapshot) => {
-            if (snapshot.exists()) {
-                  const interactionsData = snapshot.val();
-                  // Process each interaction to fetch its associated client data
-                  const processedInteractions = await Promise.all(
-                      Object.keys(interactionsData).map(async (key) => {
-                          const interaction = { id: key, ...interactionsData[key] };
-                          let client: Client | undefined = undefined;
+                const refs = {
+                    clients: ref(db, 'clients'),
+                    interactions: ref(db, 'interactions'),
+                    opportunities: ref(db, 'opportunities'),
+                    tasks: ref(db, 'tasks'),
+                    users: ref(db, 'users'),
+                };
 
-                          if (interaction.clientId) {
-                              const clientRef = ref(db, `clients/${interaction.clientId}`);
-                              const clientSnap = await get(clientRef);
-                              if (clientSnap.exists()) {
-                                  client = { id: clientSnap.key, ...clientSnap.val() } as Client;
-                              }
-                          }
-                          const date = new Date(interaction.date).toISOString();
-                          return { ...interaction, client, date } as Interaction;
-                      })
-                  );
-                  setInteractions(processedInteractions);
-              } else {
-                  setInteractions([]);
-              }
-        }, { onlyOnce: false }),
-        // Listener for opportunities, with client data enrichment
-        onValue(refs[2], async (snapshot) => {
-              if (snapshot.exists()) {
-                  const opportunitiesData = snapshot.val();
-                  const processedOpportunities = await Promise.all(
-                      Object.keys(opportunitiesData).map(async (key) => {
-                          const opp = { id: key, ...opportunitiesData[key] };
-                          let client: Client | undefined = undefined;
-                          if (opp.clientId) {
-                              const clientRef = ref(db, `clients/${opp.clientId}`);
-                              const clientSnap = await get(clientRef);
-                              if (clientSnap.exists()) {
-                                  client = { id: clientSnap.key, ...clientSnap.val() } as Client;
-                              }
-                          }
-                          return { ...opp, client } as Opportunity;
-                      })
-                  );
-                  setOpportunities(processedOpportunities);
-              } else {
-                  setOpportunities([]);
-              }
-          }, { onlyOnce: false }),
-        // Listener for tasks, with client data enrichment
-        onValue(refs[3], async (snapshot) => {
-              if (snapshot.exists()) {
-                  const tasksData = snapshot.val();
-                  const processedTasks = await Promise.all(
-                      Object.keys(tasksData).map(async (key) => {
-                          const task = { id: key, ...tasksData[key] };
-                          let client: Client | null = null;
-                          if (task.clientId) {
-                              const clientRef = ref(db, `clients/${task.clientId}`);
-                              const clientSnap = await get(clientRef);
-                              if (clientSnap.exists()) {
-                                  client = { id: clientSnap.key, ...clientSnap.val() } as Client;
-                              }
-                          }
-                          return { ...task, client } as Task;
-                      })
-                  );
-                  setTasks(processedTasks);
-              } else {
-                  setTasks([]);
-              }
-          }, { onlyOnce: false }),
-        // Listener for users
-        onValue(refs[4], (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                setUsers(Object.keys(data).map(key => ({ id: key, ...data[key] })));
-            } else {
-                setUsers([]);
+                const listeners = [
+                    onValue(refs.clients, (snapshot) => {
+                        const data = snapshot.val();
+                        setClients(data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : []);
+                    }),
+                    onValue(refs.interactions, async (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            const processed = await Promise.all(
+                                Object.keys(data).map(async (key) => {
+                                    const interaction = { id: key, ...data[key] };
+                                    let client: Client | undefined = undefined;
+                                    if (interaction.clientId) {
+                                        const clientSnap = await get(ref(db, `clients/${interaction.clientId}`));
+                                        if (clientSnap.exists()) {
+                                            client = { id: clientSnap.key, ...clientSnap.val() } as Client;
+                                        }
+                                    }
+                                    return { ...interaction, client, date: new Date(interaction.date).toISOString() } as Interaction;
+                                })
+                            );
+                            setInteractions(processed);
+                        } else {
+                            setInteractions([]);
+                        }
+                    }),
+                    onValue(refs.opportunities, async (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                             const processed = await Promise.all(
+                                Object.keys(data).map(async (key) => {
+                                    const opp = { id: key, ...data[key] };
+                                    let client: Client | undefined = undefined;
+                                    if (opp.clientId) {
+                                        const clientSnap = await get(ref(db, `clients/${opp.clientId}`));
+                                        if (clientSnap.exists()) {
+                                            client = { id: clientSnap.key, ...clientSnap.val() } as Client;
+                                        }
+                                    }
+                                    return { ...opp, client } as Opportunity;
+                                })
+                            );
+                            setOpportunities(processed);
+                        } else {
+                            setOpportunities([]);
+                        }
+                    }),
+                    onValue(refs.tasks, async (snapshot) => {
+                       const data = snapshot.val();
+                        if (data) {
+                             const processed = await Promise.all(
+                                Object.keys(data).map(async (key) => {
+                                    const task = { id: key, ...data[key] };
+                                    let client: Client | null = null;
+                                    if (task.clientId) {
+                                        const clientSnap = await get(ref(db, `clients/${task.clientId}`));
+                                        if (clientSnap.exists()) {
+                                            client = { id: clientSnap.key, ...clientSnap.val() } as Client;
+                                        }
+                                    }
+                                    return { ...task, client } as Task;
+                                })
+                            );
+                            setTasks(processed);
+                        } else {
+                            setTasks([]);
+                        }
+                    }),
+                    onValue(refs.users, (snapshot) => {
+                        const data = snapshot.val();
+                        setUsers(data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : []);
+                    }),
+                ];
+
+                setLoading(false);
+
+                return () => {
+                    off(refs.clients, 'value', listeners[0]);
+                    off(refs.interactions, 'value', listeners[1]);
+                    off(refs.opportunities, 'value', listeners[2]);
+                    off(refs.tasks, 'value', listeners[3]);
+                    off(refs.users, 'value', listeners[4]);
+                };
+            } catch (error) {
+                console.error("Failed to setup data listeners:", error);
+                setLoading(false);
             }
-        }, { onlyOnce: false }),
-      ];
+        } else {
+            // If user is logged out, clear all data and set loading to false.
+            setClients([]);
+            setInteractions([]);
+            setOpportunities([]);
+            setTasks([]);
+            setUsers([]);
+            setLoading(false);
+        }
+    };
 
-      // Once all initial data is fetched, set loading to false.
-      // We don't need Promise.all here as onValue will trigger updates when ready.
-      setLoading(false);
-
-
-      // Cleanup function to detach all listeners when the component unmounts or the user logs out.
-      return () => {
-        refs.forEach((r, i) => off(r, 'value', listeners[i]));
-      };
-    } else {
-      // If user is logged out, clear all data and set loading to false.
-      setClients([]);
-      setInteractions([]);
-      setOpportunities([]);
-      setTasks([]);
-      setUsers([]);
-      setLoading(false);
-    }
-  }, [user]); // This effect re-runs whenever the user object changes.
+    const cleanupPromise = setupListeners();
+    return () => {
+        cleanupPromise.then(cleanup => cleanup && cleanup());
+    };
+  }, [user]); 
 
   return (
     <DataContext.Provider value={{ clients, interactions, opportunities, tasks, users, setTasks, setUsers, loading }}>
